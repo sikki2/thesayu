@@ -3,20 +3,20 @@ const THINKERS_CATALOG = {
   "creative_jobs": {
     category: "creative",
     title: "Steve Jobs",
-    koreanTitle: "창의사고 (Steve Jobs)",
-    tagline: "서로 다른 분야를 연결하여 세상에 없던 새로운 가치를 만듭니다.",
-    desc: "기술과 인문학의 교차점에서 예술적인 직관과 과학적 이성을 결합해 세상을 바꾸는 혁신을 창조합니다.",
+    koreanTitle: "창의사고 (스티브 잡스)",
+    tagline: "복잡한 것을 본질만 남을 때까지 덜어내어, 누구나 직관적으로 이해하는 가치를 만듭니다.",
+    desc: "기술과 인문학의 교차점에 서되, 덜 중요한 것을 거절하는 단순화의 힘으로 단 하나의 핵심 경험에 모든 것을 집중시킵니다.",
     imgPosY: "20%",
     steps: [
-      { num: "01", title: "도메인 해체", desc: "분석하고자 하는 핵심 아이디어와 완전히 무관한 분야를 선정하세요." },
-      { num: "02", title: "본질적 특성 연결", desc: "선택한 두 분야의 고유한 장점과 본질을 나열한 뒤 교차시켜 보세요." },
-      { num: "03", title: "창조적 융합", desc: "다르게 생각하기(Think Different)의 시선으로 새로운 인터페이스나 가치를 제안하세요." }
+      { num: "01", title: "복잡성 펼치기", desc: "다루려는 주제를 구성 요소로 전부 펼쳐놓고, 각각이 정말 필요한지 하나씩 따져보세요." },
+      { num: "02", title: "핵심 한 가지 선택", desc: "'이것 하나만 남긴다면?'을 기준으로, 사용자에게 가장 중요한 단 하나의 가치를 고르세요." },
+      { num: "03", title: "과감한 제거", desc: "핵심을 가리는 나머지 요소를 덜어낸 뒤, 다르게 생각하기(Think Different)의 시선으로 더 단순한 안을 제안하세요." }
     ]
   },
   "creative_chanel": {
     category: "creative",
     title: "Coco Chanel",
-    koreanTitle: "창의사고 (Coco Chanel)",
+    koreanTitle: "창의사고 (코코 샤넬)",
     tagline: "불편하고 관습적인 형식을 걷어내고 움직임의 자유를 디자인합니다.",
     desc: "여성을 코르셋에서 해방시키고 실용성과 우아함을 동시에 갖춘 현대적인 스타일의 시대를 열었습니다.",
     imgPosY: "15%",
@@ -26,10 +26,49 @@ const THINKERS_CATALOG = {
       { num: "03", title: "독립적 가치 제안", desc: "남의 시선이 아닌 스스로 당당하고 편안한 새로운 표준을 정의하세요." }
     ]
   },
+  "creative_davinci": {
+    category: "creative",
+    title: "Leonardo da Vinci",
+    koreanTitle: "창의사고 (레오나르도 다빈치)",
+    tagline: "예술과 과학, 서로 다른 세계를 연결해 누구도 보지 못한 그림을 그립니다.",
+    desc: "해부학·공학·회화를 자유롭게 넘나들며 분야의 경계를 지우고, 이질적인 지식을 하나의 통찰로 엮어내는 연결형 사고의 원형입니다.",
+    imgPosY: "20%",
+    steps: [
+      { num: "01", title: "이종 분야 수집", desc: "지금 고민하는 주제와 전혀 무관해 보이는 분야 두 가지를 골라, 각 분야의 핵심 원리를 한 줄씩 적으세요." },
+      { num: "02", title: "공통 구조 발견", desc: "두 분야의 원리에서 닮은 패턴이나 구조를 찾아, 주제와 연결되는 선을 그어보세요." },
+      { num: "03", title: "연결의 스케치", desc: "발견한 연결을 바탕으로 새로운 아이디어 하나를, 다빈치의 노트처럼 글로 스케치하세요." }
+    ]
+  },
+  "creative_edison": {
+    category: "creative",
+    title: "Thomas Edison",
+    koreanTitle: "창의사고 (토머스 에디슨)",
+    tagline: "수천 번의 관찰과 실험을 반복하며 사람들이 진짜 원하는 것을 발견합니다.",
+    desc: "영감보다 땀을 믿는 실험가. 작은 차이를 끝까지 파고드는 집요한 관찰로, 일상의 불편을 발명의 기회로 바꿉니다.",
+    imgPosY: "20%",
+    steps: [
+      { num: "01", title: "불편 기록", desc: "오늘 하루 사람들이(혹은 내가) 무심코 감수한 불편 세 가지를 구체적으로 기록하세요." },
+      { num: "02", title: "맥락 파고들기", desc: "그중 하나를 골라 '왜 이 불편이 생기는가'를 꼬리 질문으로 세 번 이상 파고드세요." },
+      { num: "03", title: "1,000번의 가설", desc: "실패해도 좋다는 전제로, 그 불편을 줄일 수 있는 시도 아이디어를 가능한 한 많이 나열하세요." }
+    ]
+  },
+  "creative_dyson": {
+    category: "creative",
+    title: "James Dyson",
+    koreanTitle: "창의사고 (제임스 다이슨)",
+    tagline: "'원래 그런 것'을 의심하고, 5,126번의 실패를 거쳐 당연한 전제를 뒤집습니다.",
+    desc: "먼지봉투 없는 청소기, 날개 없는 선풍기처럼 제품의 '당연한 전제'를 제거하는 역발상으로 새로운 표준을 만듭니다.",
+    imgPosY: "20%",
+    steps: [
+      { num: "01", title: "당연함 목록화", desc: "다루는 주제에서 모두가 당연하게 받아들이는 전제나 관습을 세 가지 적으세요." },
+      { num: "02", title: "전제 뒤집기", desc: "그중 하나를 골라 '만약 이것이 없다면, 혹은 정반대라면?'으로 뒤집은 시나리오를 상상하세요." },
+      { num: "03", title: "실패 전제 시제품", desc: "뒤집힌 시나리오가 작동하려면 무엇이 필요한지, 실패를 전제로 한 첫 초안을 글로 설계하세요." }
+    ]
+  },
   "logic_turing": {
     category: "logic",
     title: "Alan Turing",
-    koreanTitle: "논리사고 (Alan Turing)",
+    koreanTitle: "논리사고 (앨런 튜링)",
     tagline: "복잡한 연산과 사고의 과정을 명확한 규칙과 기계적 절차로 공식화합니다.",
     desc: "인간의 인지 과정을 기계적 상태 전이로 단순화하여 컴퓨터의 사상적 초석을 다지고 난제를 해결합니다.",
     imgPosY: "25%",
@@ -42,7 +81,7 @@ const THINKERS_CATALOG = {
   "meta_beauvoir": {
     category: "meta",
     title: "Simone de Beauvoir",
-    koreanTitle: "메타인지 (Beauvoir)",
+    koreanTitle: "메타인지 (시몬 드 보부아르)",
     tagline: "주어진 운명이나 타인의 시선에서 벗어나 주체로서 자신을 인식합니다.",
     desc: "사회가 규정한 굴레와 본질을 거부하고, 스스로 행동하고 선택하는 단독자로서의 자아를 성찰합니다.",
     imgPosY: "20%",
@@ -55,21 +94,21 @@ const THINKERS_CATALOG = {
   "critical_sagan": {
     category: "critical",
     title: "Carl Sagan",
-    koreanTitle: "비판사고 (Sagan)",
+    koreanTitle: "비판사고 (칼 세이건)",
     tagline: "우주를 향한 호기심과 과학적 합리성으로 큰 그림을 그립니다.",
-    desc: "우주와 과학의 심오한 연결을 통해 인류적 시각을 넓힙니다.",
+    desc: "'창백한 푸른 점'의 시선으로 주장과 믿음을 검증하며, 회의와 경이가 공존하는 비판적 사고를 단련합니다.",
     imgPosY: "12%",
     imgScale: "190%",
     steps: [
-      { num: "01", title: "우주적 관점", desc: "더 넓은 시간과 공간의 스케일로 문제를 재정의하세요." },
-      { num: "02", title: "증거 기반 호기심", desc: "주장에 대해 실험적/관측적 근거를 요구하세요." },
-      { num: "03", title: "대중적 설명", desc: "복잡한 개념을 명확하고 공감하게 전달하는 연습을 하세요." }
+      { num: "01", title: "우주적 관점", desc: "지금의 고민을 10년 뒤, 혹은 우주적 스케일에서 바라보면 무엇이 여전히 중요한지 다시 적어보세요." },
+      { num: "02", title: "증거 기반 호기심", desc: "내가 믿고 있는 주장 하나를 골라 '이를 뒷받침하는 증거는 무엇인가'를 스스로에게 엄격히 요구하세요." },
+      { num: "03", title: "대중적 설명", desc: "검증한 결론을 과학을 모르는 친구에게 설명하듯, 쉽고 정확한 문장으로 옮겨보세요." }
     ]
   },
   "empathy_mandela": {
     category: "empathy",
     title: "Nelson Mandela",
-    koreanTitle: "공감사고 (Mandela)",
+    koreanTitle: "공감사고 (넬슨 만델라)",
     tagline: "적대적 관계마저 포용하는 깊은 공감과 용서로 갈등의 뿌리를 치유합니다.",
     desc: "분노와 복수를 넘어 상대방의 상처와 두려움을 이해하고, 평화로운 공존을 위한 화해의 다리를 놓습니다.",
     imgPosY: "20%",
@@ -82,7 +121,7 @@ const THINKERS_CATALOG = {
   "creative_harakenya": {
     category: "creative",
     title: "Kenya Hara",
-    koreanTitle: "창의사고 (Kenya Hara)",
+    koreanTitle: "창의사고 (하라 켄야)",
     tagline: "비어 있음(Emptiness)을 디자인하여 사용자의 다양한 생각을 담습니다.",
     desc: "불필요한 가식을 버리고 백색의 여백(Emptiness)을 디자인함으로써, 무엇이든 수용하고 연결할 수 있는 궁극의 단순함을 창조합니다.",
     imgPosY: "15%",
@@ -96,21 +135,21 @@ const THINKERS_CATALOG = {
   "creative_curie": {
     category: "creative",
     title: "Marie Curie",
-    koreanTitle: "창의사고 (Curie)",
-    tagline: "실험과 관찰을 통해 원소의 본질을 드러냅니다.",
-    desc: "치밀한 실험과 집요한 관찰로 과학의 경계를 확장했습니다.",
+    koreanTitle: "창의사고 (마리 퀴리)",
+    tagline: "보이지 않는 것을 측정 가능하게 만들 때까지, 관찰과 실험을 멈추지 않습니다.",
+    desc: "치밀한 실험과 집요한 관찰의 반복으로 미지의 원소를 증명해낸, 끈기형 탐구 사고의 표본입니다.",
     imgPosY: "15%",
     imgScale: "170%",
     steps: [
-      { num: "01", title: "세부 관찰", desc: "작은 신호와 차이를 놓치지 마세요." },
-      { num: "02", title: "엄격한 실험", desc: "반복 가능한 측정과 통제된 절차를 설계하세요." },
-      { num: "03", title: "결과의 해석", desc: "데이터가 말하는 바를 정직하게 해석하세요." }
+      { num: "01", title: "세부 관찰", desc: "다루는 주제에서 남들이 지나치는 작은 신호와 미세한 차이를 세 가지 이상 적어보세요." },
+      { num: "02", title: "엄격한 실험", desc: "그 차이가 우연이 아닌지 확인할 수 있는, 반복 가능한 검증 절차를 직접 설계해 보세요." },
+      { num: "03", title: "결과의 해석", desc: "기대와 다른 결과도 버리지 말고, 데이터가 실제로 말하는 바를 정직하게 적어 내려가세요." }
     ]
   },
   "creative_picasso": {
     category: "creative",
     title: "Pablo Picasso",
-    koreanTitle: "창의사고 (Picasso)",
+    koreanTitle: "창의사고 (파블로 피카소)",
     tagline: "대상을 다각도에서 관찰하고 분해하여 고정관념 너머의 본질을 병치합니다.",
     desc: "입체주의 기법으로 사물을 한 시점이 아닌 여러 각도에서 동시에 해체하고 결합해 새로운 다차원적 현실을 제시합니다.",
     imgPosY: "70%", // Move further up for top-frame portrait
@@ -124,67 +163,67 @@ const THINKERS_CATALOG = {
   "creative_curie": {
     category: "creative",
     title: "Marie Curie",
-    koreanTitle: "창의사고 (Curie)",
-    tagline: "실험과 관찰을 통해 원소의 본질을 드러냅니다.",
-    desc: "치밀한 실험과 집요한 관찰로 과학의 경계를 확장했습니다.",
+    koreanTitle: "창의사고 (마리 퀴리)",
+    tagline: "보이지 않는 것을 측정 가능하게 만들 때까지, 관찰과 실험을 멈추지 않습니다.",
+    desc: "치밀한 실험과 집요한 관찰의 반복으로 미지의 원소를 증명해낸, 끈기형 탐구 사고의 표본입니다.",
     imgPosY: "28%",
     imgPosX: "35%",
     imgScale: "150%",
     steps: [
-      { num: "01", title: "세부 관찰", desc: "작은 신호와 차이를 놓치지 마세요." },
-      { num: "02", title: "엄격한 실험", desc: "반복 가능한 측정과 통제된 절차를 설계하세요." },
-      { num: "03", title: "결과의 해석", desc: "데이터가 말하는 바를 정직하게 해석하세요." }
+      { num: "01", title: "세부 관찰", desc: "다루는 주제에서 남들이 지나치는 작은 신호와 미세한 차이를 세 가지 이상 적어보세요." },
+      { num: "02", title: "엄격한 실험", desc: "그 차이가 우연이 아닌지 확인할 수 있는, 반복 가능한 검증 절차를 직접 설계해 보세요." },
+      { num: "03", title: "결과의 해석", desc: "기대와 다른 결과도 버리지 말고, 데이터가 실제로 말하는 바를 정직하게 적어 내려가세요." }
     ]
   },
   "empathy_mlk": {
     category: "empathy",
     title: "Martin Luther King",
-    koreanTitle: "공감사고 (Martin Luther King)",
+    koreanTitle: "공감사고 (마틴 루터 킹)",
     tagline: "평등과 화해의 메시지로 사회적 공감과 연대를 촉진합니다.",
     desc: "비폭력과 연대로 사회적 불의에 맞서며 모두가 인간으로서 존엄하게 대우받는 세상을 지향합니다.",
     imgPosY: "45%",
     imgPosX: "50%",
     imgScale: "200%",
     steps: [
-      { num: "01", title: "목소리로 연결", desc: "포용의 메시지를 명확하게 전할 수 있는 언어를 연습하세요." },
-      { num: "02", title: "비폭력 실천", desc: "대화와 행동으로 갈등을 평화롭게 해결하는 방법을 모색하세요." },
-      { num: "03", title: "연대 구축", desc: "공동체의 다양한 목소리를 모아 지속 가능한 변화를 설계하세요." }
+      { num: "01", title: "목소리로 연결", desc: "갈등 상황에서 상대를 배제하지 않으면서 내 입장을 전하는 문장을 직접 써보세요." },
+      { num: "02", title: "비폭력 실천", desc: "분노가 아닌 원칙으로 맞서기 — 지금의 갈등에 적용할 비폭력적 대응 한 가지를 설계하세요." },
+      { num: "03", title: "연대 구축", desc: "나와 다른 입장의 사람까지 함께할 수 있는, 모두가 공감할 공동 목표를 한 문장으로 정의하세요." }
     ]
   },
   "meta_cobain": {
     category: "meta",
     title: "Kurt Cobain",
-    koreanTitle: "메타인지 (Cobain)",
-    tagline: "내면의 불안을 음악으로 해석하는 독창적 직관을 가집니다.",
-    desc: "강렬한 감성과 자기 성찰을 음악적으로 풀어내는 방식이 특징입니다.",
+    koreanTitle: "메타인지 (커트 코베인)",
+    tagline: "흔들리는 내면을 외면하지 않고, 그것을 들여다보는 언어로 바꿔냅니다.",
+    desc: "감정을 억누르는 대신 관찰의 대상으로 삼아, 자기 인식을 창작의 재료로 전환하는 메타인지 훈련의 한 방식입니다.",
     imgPosY: "22%",
     imgPosX: "50%",
     imgScale: "110%",
     steps: [
-      { num: "01", title: "내면 관찰", desc: "자신의 감정적 패턴과 반복되는 생각을 기록하세요." },
-      { num: "02", title: "감성 해석", desc: "감정적 반응을 의미 구조로 전환해 보세요." },
-      { num: "03", title: "표현과 이완", desc: "표현을 통해 내적 긴장을 외부로 해소하는 연습을 하세요." }
+      { num: "01", title: "내면 관찰", desc: "오늘 반복해서 떠오른 감정과 생각을, 판단하지 말고 있는 그대로 기록하세요." },
+      { num: "02", title: "감성 해석", desc: "그 감정이 '무엇에 대한 반응'이었는지 한 발 떨어져서 이름을 붙여보세요." },
+      { num: "03", title: "표현과 이완", desc: "이름 붙인 감정을 짧은 글이나 가사 한 줄로 표현해, 안의 긴장을 바깥으로 옮겨보세요." }
     ]
   },
   "empathy_tupac": {
     category: "empathy",
     title: "Tupac Shakur",
-    koreanTitle: "공감사고 (Tupac)",
-    tagline: "거리의 삶과 고난을 예리하게 공감하는 목소리를 냅니다.",
-    desc: "현장의 이야기를 생생하게 전달하며 사회적 경험을 공감으로 전환합니다.",
+    koreanTitle: "공감사고 (투팍 샤커)",
+    tagline: "외면당한 삶의 이야기에 귀 기울이고, 그 목소리를 대신 울리는 공감을 단련합니다.",
+    desc: "거리의 현실을 직접 겪고 기록한 경험을 서사로 바꿔, 듣는 이가 타인의 삶을 자기 일처럼 느끼게 만듭니다.",
     imgPosY: "35%",
     imgPosX: "50%",
     imgScale: "cover",
     steps: [
-      { num: "01", title: "현장 감수성", desc: "사람들이 겪는 현실적 문제를 직접 듣고 기록하세요." },
-      { num: "02", title: "공감적 서사", desc: "경험을 이야기로 풀어 공감의 연결을 만드세요." },
-      { num: "03", title: "연대 실천", desc: "공감한 경험을 기반으로 작은 행동부터 실천해 보세요." }
+      { num: "01", title: "현장 감수성", desc: "내 주변에서 목소리를 내지 못하는 사람의 현실적 문제 하나를 직접 듣고 기록하세요." },
+      { num: "02", title: "공감적 서사", desc: "그 기록을 1인칭 이야기로 다시 써서, 읽는 사람이 잠시 그 입장이 되어보게 만드세요." },
+      { num: "03", title: "연대 실천", desc: "이야기에서 멈추지 말고, 그 사람의 상황을 바꿀 수 있는 가장 작은 행동 하나를 정해 실천하세요." }
     ]
   },
   "critical_popper": {
     category: "critical",
     title: "Karl Popper",
-    koreanTitle: "비판사고 (Karl Popper)",
+    koreanTitle: "비판사고 (칼 포퍼)",
     tagline: "이론의 타당성을 증명하기보다, 그것을 반증할 오류를 적극적으로 찾습니다.",
     desc: "완벽해 보이는 지식이라도 반증 가능성을 열어두고 끊임없이 의심하며 참된 진리에 다가섭니다.",
     imgPosY: "20%",
@@ -197,7 +236,7 @@ const THINKERS_CATALOG = {
   "logic_kant": {
     category: "logic",
     title: "Immanuel Kant",
-    koreanTitle: "논리사고 (Kant)",
+    koreanTitle: "논리사고 (임마누엘 칸트)",
     tagline: "경험을 조직하는 이성의 보편적 형식과 한계를 철저히 규정합니다.",
     desc: "우리가 대상을 있는 그대로 아는 것이 아니라, 우리 이성의 틀을 통해 어떻게 인식하는지 탐구합니다.",
     imgPosY: "20%",
@@ -210,7 +249,7 @@ const THINKERS_CATALOG = {
   "meta_socrates": {
     category: "meta",
     title: "Socrates",
-    koreanTitle: "메타인지 (Socrates)",
+    koreanTitle: "메타인지 (소크라테스)",
     tagline: "자신의 무지를 자각하는 것에서부터 참된 지혜의 탐구를 시작합니다.",
     desc: "끊임없는 질문과 대화를 통해 상대방이 스스로 지닌 편견과 모순을 깨닫고 진리에 이르도록 돕습니다.",
     imgPosY: "15%",
@@ -223,16 +262,16 @@ const THINKERS_CATALOG = {
   ,"meta_camus": {
     category: "meta",
     title: "Albert Camus",
-    koreanTitle: "메타인지 (Camus)",
-    tagline: "부조리와 실존을 날카롭게 성찰하는 사유를 전개합니다.",
-    desc: "일상의 모순과 인간 존재의 부조리를 직시하고 타자와 세계를 성찰합니다.",
+    koreanTitle: "메타인지 (알베르 카뮈)",
+    tagline: "삶의 부조리를 직시하면서도, 그 안에서 스스로 의미를 만드는 사유를 단련합니다.",
+    desc: "도망치지도 체념하지도 않고 일상의 모순을 정면으로 바라보는 것 — 카뮈식 메타인지는 거기서 시작됩니다.",
     imgPosY: "14%",
     imgPosX: "50%",
     imgScale: "140%",
     steps: [
-      { num: "01", title: "부조리 인식", desc: "일상에 숨어있는 의미의 부조리를 찾아 기록하세요." },
-      { num: "02", title: "자기-타자 성찰", desc: "나와 타자의 갈등 속에서 보이는 윤리적 선택을 분석하세요." },
-      { num: "03", title: "의미의 재구성", desc: "부조리 속에서 작은 의미를 만들어내는 실천을 고안하세요." }
+      { num: "01", title: "부조리 인식", desc: "오늘 겪은 일 중 '왜 하는지 모른 채 하고 있는 것' 하나를 찾아 기록하세요." },
+      { num: "02", title: "자기-타자 성찰", desc: "그 상황에서 나는 어떤 선택을 했고, 타인의 자리에서 보면 그 선택이 어떻게 보일지 분석하세요." },
+      { num: "03", title: "의미의 재구성", desc: "정답이 없음을 인정한 채로, 그럼에도 내가 부여할 수 있는 작은 의미 하나를 글로 정의하세요." }
     ]
   }
 };
