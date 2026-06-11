@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>생각PT | 사고 성장 플랫폼</title>
+  <meta name="description" content="생각PT — AI 시대, 스스로 질문하고 검증하는 힘을 기르는 사고력 진단·훈련 플랫폼. 비로그인으로 사고 패턴을 진단하고 5대 사고 영역을 단련하세요.">
+
+  <!-- Premium Fonts from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=Syne:wght@500;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css?v=2.1">
+
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+  <!-- SVG Liquid Filter definition (CRITICAL for Image 1) -->
+  <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+    style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; overflow: hidden;">
+    <defs>
+      <!-- Filter for liquid nav merge -->
+      <filter id="liquid-metaball">
+        <!-- Blur the elements -->
+        <feGaussianBlur in="SourceGraphic" stdDeviation="3.8" result="blur" />
+        <!-- Boost contrast to sharpen edges, keeping them connected organic-style -->
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+        <!-- Beautiful gooey shadow follow -->
+        <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.15" />
+      </filter>
+
+      <!-- Alternate liquid filter for more gooey background effects -->
+      <filter id="gooey-bg">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -12" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Dynamic Fluid Background Blobs -->
+  <div class="blob-container">
+    <div class="blob-grid"></div>
+    <div class="blob blob-indigo" id="blob-1"></div>
+    <div class="blob blob-teal" id="blob-2"></div>
+    <div class="blob blob-magenta" id="blob-3"></div>
+  </div>
+
+  <!-- Grid overlay representing wireframes -->
+  <div class="wireframe-grid-overlay"></div>
+
+  <!-- Header & Liquid Navbar Container (StoryScape style layout - fixed/sticky) -->
+  <header class="header">
+    <div class="header-inner">
+      <!-- Left side: Brand Logo -->
+      <div class="header-left">
+        <a href="index.html" class="logo-link">
+          <span class="logo-text">생각PT</span>
+        </a>
+      </div>
+
+      <!-- Right side: Reflections Log outline & Black Liquid Widget -->
+      <div class="header-right">
+        <button class="btn-outline-pill" id="btn-header-log-trigger">성장 아카이브</button>
+
+        <div class="liquid-widget-wrapper" id="btn-header-launch-trigger">
+          <!-- Gooey Background Layer (Black shapes only) -->
+          <div class="liquid-widget-bg" style="filter: url(#liquid-metaball);">
+            <div class="bg-bubble bubble-text" style="position: relative;">
+              <span style="color: transparent; user-select: none;">사고 진단 시작</span>
+              <div class="widget-bridge"></div>
+            </div>
+            <div class="bg-bubble bubble-icon"></div>
+          </div>
+
+          <!-- Sharp Foreground Layer (Text and rotating icon, unaffected by blur filter) -->
+          <div class="liquid-widget-fg">
+            <div class="fg-bubble bubble-text">
+              <span>사고 진단 시작</span>
+            </div>
+            <div class="fg-bubble bubble-icon">
+              <svg class="globe-svg animate-spin-slow" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2" />
+                <ellipse cx="50" cy="50" rx="20" ry="45" fill="none" stroke="currentColor" stroke-width="2" />
+                <ellipse cx="50" cy="50" rx="45" ry="15" fill="none" stroke="currentColor" stroke-width="2" />
+                <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" stroke-width="2" />
+                <line x1="50" y1="5" x2="50" y2="95" stroke="currentColor" stroke-width="2" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Section: Thought Expansion Playground -->
+  <main class="main-playground">
+    <!-- 60px Spacer Component -->
+    <div class="header-spacer"></div>
+
+    <div class="playground-wrapper">
+      <div class="hero-copy">
+        <h1 id="carousel-model-name">—</h1>
+        <p id="carousel-model-desc">당신의 사고는 위대한 사상가와 닮아 있습니다. 이제, 생각하는 힘을 단련할 차례입니다.</p>
+        <button class="btn-outline-pill" id="btn-engage-mind">내 사고력 진단하기</button>
+      </div>
+
+      <div class="scatter-center-copy">
+        <h2>오늘은 어떤 사고 영역을 단련할까요?</h2>
+        <button class="btn-outline-pill btn-back-carousel" id="btn-back-carousel">
+          <i class="fa-solid fa-arrow-left"></i> 돌아가기
+        </button>
+      </div>
+
+      <!-- Semicircular Arc Carousel (Image 2 style container) -->
+      <div class="carousel-section">
+        <!-- Semicircular Arc Positioning Container for Cards -->
+        <div class="arc-container" id="arc-container">
+          <!-- Cards are dynamically injected by app.js at runtime -->
+        </div>
+        <!-- Category Stack Labels Container -->
+        <div class="category-stack-labels-container" id="category-labels-container"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Interactive Cognitive Workspace (Exercise Overlay) -->
+  <div class="exercise-overlay" id="exercise-overlay">
+    <div class="overlay-close" id="btn-close-exercise">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </div>
+
+    <div class="overlay-content-wrapper">
+      <div class="overlay-left">
+        <div class="exercise-header">
+          <span class="exercise-badge">사고 트레이닝</span>
+          <h2 class="exercise-title" id="ex-title">First Principles</h2>
+          <p class="exercise-sub" id="ex-sub">Deconstruct everything down to its core elements.</p>
+        </div>
+
+        <div class="exercise-steps" id="ex-steps-container">
+          <!-- Dynamically populated steps based on selected card -->
+        </div>
+      </div>
+
+      <div class="overlay-right">
+        <div class="workspace-card">
+          <div class="workspace-header">
+            <span>Interactive Workspace</span>
+            <div class="word-count" id="word-count">0 characters</div>
+          </div>
+
+          <div class="workspace-input-area">
+            <textarea class="textarea-thinking" id="thinking-textarea"
+              placeholder="정답을 찾으려 하지 마세요. 지금 머릿속을 스치는 생각을 그대로 적는 것, 그것이 사고 단련의 첫 세트입니다..."></textarea>
+          </div>
+
+          <div class="workspace-footer">
+            <button class="btn-clear" id="btn-clear-workspace">Clear</button>
+            <button class="btn-submit-thinking" id="btn-submit-thinking">
+              <span>Complete Reflection</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reflections History Drawer (App View) -->
+  <div class="app-drawer" id="app-drawer">
+    <div class="drawer-header">
+      <h2 class="drawer-title"><i class="fa-solid fa-brain"></i> 성장 아카이브</h2>
+      <button class="btn-close-drawer" id="btn-close-drawer"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="drawer-content" id="drawer-content">
+      <div class="empty-log-state">
+        <div class="empty-icon"><i class="fa-solid fa-pen-nib"></i></div>
+        <p>아직 쌓인 기록이 없습니다. 첫 번째 사고 단련을 마치고, 성장의 첫 페이지를 남겨보세요.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div class="toast-notification" id="toast-notification">오늘의 사고 단련이 성장 아카이브에 기록되었습니다.</div>
+
+  <!-- Creative Style Diagnosis Overlay (진단 → 훈련 성장 루프의 1단계) -->
+  <div class="diagnosis-overlay" id="diagnosis-overlay">
+    <div class="overlay-close" id="btn-close-diagnosis">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </div>
+    <div class="diagnosis-content" id="diagnosis-body">
+      <!-- Screens are rendered dynamically by diagnosis.js -->
+    </div>
+  </div>
+
+  <!-- Privacy Notice (사업계획서 고지 문구: 비로그인·서버 미저장) -->
+  <div class="privacy-notice" id="privacy-notice">
+    <i class="fa-solid fa-lock"></i>
+    <span>비로그인 · 서버 미저장 — 모든 기록은 이 브라우저에만 저장됩니다.</span>
+  </div>
+
+
+
+  <!-- JavaScript Main Application Script -->
+  <script src="app.js?v=2.3" defer></script>
+  <!-- Creative Style Diagnosis Module -->
+  <script src="diagnosis.js?v=1.1" defer></script>
+</body>
+
+</html>
