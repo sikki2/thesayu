@@ -628,9 +628,6 @@ async function refreshFigures() {
     mentalModels = buildMentalModels(files);
     renderCards(files);
     bindCards();
-    // [DEBUG v2.5] 재렌더 추적: innerHTML=''로 카드 DOM이 통째로 교체된 시점을 기록 (원인 확정 후 제거)
-    console.warn('[생각PT DEBUG] ⚠️ refreshFigures 실행됨 — 카드 DOM 전체 재생성. 새 카드의 listenerBound =',
-      cards[0] ? (cards[0].dataset.listenerBound || '없음(클릭 리스너 미부착!)') : 'n/a');
     // Reinitialize positions/layout without re-binding global listeners
     initCardPositions();
     updateCarouselLayout(activeCardIndex);
@@ -1050,50 +1047,36 @@ function exitScatterState() {
 // --- 5. Event Listeners & Binding ---
 function setupEventListeners() {
   // Card click triggers Dial rotation or opens Workspace directly if scattered
-  cards.forEach(card => {
-    card.dataset.listenerBound = 'v2.5'; // [DEBUG v2.5] 이 카드에 클릭 리스너가 부착되었음을 마킹 (원인 확정 후 제거)
-    card.addEventListener('click', () => {
-      const cardIndex = Number(card.dataset.cardIndex);
-      const modelIndex = Number(card.dataset.model);
-      console.log('[생각PT DEBUG] ✅ 카드 핸들러 진입:', { cardIndex, activeCardIndex, modelIndex, isCenter: cardIndex === activeCardIndex });
-      const playground = document.querySelector('.main-playground');
-      if (playground && playground.classList.contains('state-scatter')) {
-        openExerciseWorkspace(modelIndex);
-      } else if (card === cards[activeCardIndex] || cardIndex === activeCardIndex) {
-        // 중앙 카드 클릭: 훈련 워크스페이스 진입
-        stopCarouselAutoplay();
-        window.clearTimeout(cardEnterTimer);
-        selectedModelIndex = modelIndex;
-        openExerciseWorkspace(modelIndex);
-      } else {
-        // 옆 카드 클릭: 해당 위인으로 회전만 (둘러보기)
-        // 자동 회전은 재시작하지 않음 → 중앙 카드를 여유 있게 클릭해 진입 가능
-        // (마우스가 캐러셀 영역을 벗어나면 기존 pointerleave 리스너가 자동 회전을 복귀시킴)
-        stopCarouselAutoplay();
-        window.clearTimeout(cardEnterTimer);
-        rotateDialToCard(cardIndex);
-      }
-    });
+  // [v2.6 FIX] 카드별 리스너 → arcContainer 이벤트 위임으로 교체.
+  // 원인: 초기화 마지막의 refreshFigures()가 arcContainer.innerHTML=''로 카드 DOM을 재생성하면서
+  //       기존 카드에 부착된 click 리스너가 전부 파괴됨 (v2.5-debug 콘솔 로그로 확정).
+  // 위임 방식은 살아남는 부모(arcContainer)에 리스너 1개만 두므로 재렌더 횟수와 무관하게 동작함.
+  arcContainer.addEventListener('click', (e) => {
+    const card = e.target.closest ? e.target.closest('.wireframe-card') : null;
+    if (!card) return;
+    const cardIndex = Number(card.dataset.cardIndex);
+    const modelIndex = Number(card.dataset.model);
+    const playground = document.querySelector('.main-playground');
+    if (playground && playground.classList.contains('state-scatter')) {
+      openExerciseWorkspace(modelIndex);
+    } else if (!isNaN(cardIndex) && cardIndex === activeCardIndex) {
+      // 중앙 카드 클릭: 훈련 워크스페이스 진입
+      stopCarouselAutoplay();
+      window.clearTimeout(cardEnterTimer);
+      selectedModelIndex = modelIndex;
+      openExerciseWorkspace(modelIndex);
+    } else {
+      // 옆 카드 클릭: 해당 위인으로 회전만 (둘러보기)
+      // 자동 회전은 재시작하지 않음 → 중앙 카드를 여유 있게 클릭해 진입 가능
+      // (마우스가 캐러셀 영역을 벗어나면 기존 pointerleave 리스너가 자동 회전을 복귀시킴)
+      stopCarouselAutoplay();
+      window.clearTimeout(cardEnterTimer);
+      rotateDialToCard(cardIndex);
+    }
   });
 
   arcContainer.addEventListener('pointerenter', stopCarouselAutoplay);
   arcContainer.addEventListener('pointerleave', startCarouselAutoplay);
-
-  // [DEBUG v2.5] 전역 클릭 추적 (캡처 단계) — 체크리스트 항목을 한 번의 클릭으로 일괄 진단 (원인 확정 후 제거)
-  document.addEventListener('click', (e) => {
-    const cardEl = e.target.closest ? e.target.closest('.wireframe-card') : null;
-    const topEl = document.elementFromPoint(e.clientX, e.clientY);
-    const topElDesc = topEl ? `${topEl.tagName}.${(topEl.getAttribute && topEl.getAttribute('class')) || ''}` : null;
-    console.log('[생각PT DEBUG] 🖱️ document 클릭 감지:', {
-      클릭지점_최상위요소: topElDesc,
-      카드명중: !!cardEl,
-      cardIndex: cardEl ? cardEl.dataset.cardIndex : null,
-      activeCardIndex: activeCardIndex,
-      리스너바인딩: cardEl ? (cardEl.dataset.listenerBound || '❌ 없음 — 미바인딩 카드!') : null,
-      현재cards목록에포함: cardEl ? Array.prototype.includes.call(cards, cardEl) : null,
-      playground상태: (document.querySelector('.main-playground') || { className: 'n/a' }).className
-    });
-  }, true);
 
   // Action Button to engage workspace
   if (btnEngageMind) {
