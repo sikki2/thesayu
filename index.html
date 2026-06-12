@@ -15,7 +15,7 @@
     rel="stylesheet">
 
   <!-- CSS Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=2.6">
+  <link rel="stylesheet" href="styles.css?v=2.7">
 
   <!-- FontAwesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -68,6 +68,7 @@
 
       <!-- Right side: Reflections Log outline & Black Liquid Widget -->
       <div class="header-right">
+        <button class="btn-outline-pill" id="btn-header-dashboard-trigger">대시보드</button>
         <button class="btn-outline-pill" id="btn-header-log-trigger">성장 아카이브</button>
 
         <div class="liquid-widget-wrapper" id="btn-header-launch-trigger">
@@ -213,6 +214,17 @@
     </div>
   </div>
 
+  <!-- Mind Dashboard Overlay (진단·훈련 데이터 종합 대시보드 — dashboard.js가 내용 렌더) -->
+  <div class="dashboard-overlay" id="dashboard-overlay">
+    <div class="overlay-close" id="btn-close-dashboard">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </div>
+    <div class="dashboard-content" id="dashboard-body"></div>
+  </div>
+
   <!-- Toast Notification System -->
   <div class="toast-notification" id="toast-notification">오늘의 사고 단련이 성장 아카이브에 기록되었습니다.</div>
 
@@ -241,6 +253,8 @@
   <script src="app.js?v=2.9" defer></script>
   <!-- Creative Style Diagnosis Module -->
   <script src="diagnosis.js?v=1.6" defer></script>
+  <!-- Mind Dashboard Module -->
+  <script src="dashboard.js?v=1.0" defer></script>
 </body>
 
 </html>
