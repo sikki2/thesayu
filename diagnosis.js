@@ -405,6 +405,10 @@ function saveDiagnosisResult(result) {
     history.unshift(result);
     localStorage.setItem(KEY, JSON.stringify(history.slice(0, 30)));
   } catch (e) { /* 저장 실패 시 무시 (비차단) */ }
+  // 성장 아카이브 드로어 즉시 갱신 (app.js renderLogs 전역)
+  if (typeof window.renderLogs === 'function') {
+    try { window.renderLogs(); } catch (e) { /* no-op */ }
+  }
 }
 
 /* ------------------------------------------------------------
@@ -537,13 +541,14 @@ function renderAnalyzing() {
 
 /* 마인드 인바디 — 4각 다이아몬드 차트 (SVG) */
 function buildDiamondChart(scores, maxPossible) {
-  const C = 150, R = 110;
+  const C = 160, R = 110;
   // 축: 상=연결력, 우=관찰력, 하=단순화력, 좌=역발상력
+  // lx/ly: 라벨을 축 끝점에서 추가로 밀어내는 오프셋 (잘림 방지 최소 여백)
   const axes = [
-    { key: 'conn', x: 0, y: -1, lx: 0, ly: -16, anchor: 'middle' },
-    { key: 'obs', x: 1, y: 0, lx: 14, ly: 4, anchor: 'start' },
-    { key: 'simp', x: 0, y: 1, lx: 0, ly: 24, anchor: 'middle' },
-    { key: 'inv', x: -1, y: 0, lx: -14, ly: 4, anchor: 'end' }
+    { key: 'conn', x: 0, y: -1, lx: 0, ly: -18, anchor: 'middle' },
+    { key: 'obs', x: 1, y: 0, lx: 14, ly: 5, anchor: 'start' },
+    { key: 'simp', x: 0, y: 1, lx: 0, ly: 26, anchor: 'middle' },
+    { key: 'inv', x: -1, y: 0, lx: -14, ly: 5, anchor: 'end' }
   ];
   const pt = (axis, ratio) => `${C + axis.x * R * ratio},${C + axis.y * R * ratio}`;
   const gridLevels = [0.25, 0.5, 0.75, 1].map(r =>
@@ -561,8 +566,10 @@ function buildDiamondChart(scores, maxPossible) {
     return `<text x="${C + a.x * R + a.lx}" y="${C + a.y * R + a.ly}" text-anchor="${a.anchor}"
       class="diag-chart-label">${area.name} <tspan class="diag-chart-score">${scores[a.key]}</tspan></text>`;
   }).join('');
+  // viewBox: 라벨 텍스트(좌우 약 61px 폭, 상하 폰트 높이)까지 포함한 최소 경계 + 소폭 패딩
+  // 다이아몬드(220px)가 viewBox 너비(380px)의 약 58%를 차지해 카드에 꽉 차게 렌더링됨
   return `
-    <svg class="diag-diamond" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="마인드 인바디 차트">
+    <svg class="diag-diamond" viewBox="-30 16 380 288" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="마인드 인바디 차트">
       ${gridLevels}${axisLines}
       <polygon points="${valuePoly}" class="diag-value-shape"/>
       ${axes.map(a => {
@@ -572,6 +579,58 @@ function buildDiamondChart(scores, maxPossible) {
       }).join('')}
       ${labels}
     </svg>
+  `;
+}
+
+/* 생각 깊이 4지표 — LLM 연동 전이므로 자리(placeholder) 상태로 렌더 */
+const DIAG_DEPTH_METRICS = [
+  { icon: 'fa-seedling',        name: '신선도', desc: 'AI 초안과 비교한 차별성·독창성 수준' },
+  { icon: 'fa-magnifying-glass', name: '구체도', desc: '추상적 표현 대비 구체적 표현의 활용 정도' },
+  { icon: 'fa-circle-nodes',    name: '연결도', desc: '서로 다른 영역과 관점을 연결하는 수준' },
+  { icon: 'fa-person-running',  name: '실행도', desc: '실제 행동·결과물로 이어질 가능성' }
+];
+
+function buildDepthSection() {
+  const tiles = DIAG_DEPTH_METRICS.map(m => `
+    <div class="diag-depth-tile">
+      <div class="diag-depth-head">
+        <span class="diag-depth-name"><i class="fa-solid ${m.icon}"></i> ${m.name}</span>
+        <span class="diag-depth-val">—</span>
+      </div>
+      <div class="diag-depth-track"><div class="diag-depth-fill"></div></div>
+      <p class="diag-depth-desc">${m.desc}</p>
+    </div>
+  `).join('');
+  return `
+    <div class="diag-result-card">
+      <h4 class="diag-card-title"><i class="fa-solid fa-water"></i> 생각 깊이 4지표
+        <span class="diag-pending-badge">LLM 정량 채점 · 고도화 예정</span></h4>
+      <div class="diag-depth-grid">${tiles}</div>
+      <p class="diag-card-foot">정식 버전에서는 훈련 답변을 LLM이 분석해 네 지표를 정량화하고, <strong>훈련 전후 변화</strong>를 함께 보여드립니다.</p>
+    </div>
+  `;
+}
+
+function buildVsSection(r) {
+  const topicLine = r.subjectiveTopic
+    ? `「${escapeDiagHTML(r.subjectiveTopic)}」 주제로 훈련을 완료하면 내 답변이 여기에 채워집니다.`
+    : `위인 렌즈 훈련을 완료하면 내 답변이 여기에 채워집니다.`;
+  return `
+    <div class="diag-result-card">
+      <h4 class="diag-card-title"><i class="fa-solid fa-code-compare"></i> AI vs 내 답변 비교
+        <span class="diag-pending-badge">고도화 예정</span></h4>
+      <div class="diag-vs-grid">
+        <div class="diag-vs-col diag-vs-ai">
+          <span class="diag-vs-label"><i class="fa-solid fa-robot"></i> AI 초안</span>
+          <p>같은 주제에 대한 생성형 AI의 초안이 여기에 표시됩니다.</p>
+        </div>
+        <div class="diag-vs-col diag-vs-me">
+          <span class="diag-vs-label"><i class="fa-solid fa-pen-nib"></i> 내 답변</span>
+          <p>${topicLine}</p>
+        </div>
+      </div>
+      <p class="diag-card-foot">AI 답변에 <strong>내가 더한 관점과 고유한 사고 과정</strong>을 LLM이 비교 요약해, 사고 확장 지점을 짚어드립니다.</p>
+    </div>
   `;
 }
 
@@ -615,14 +674,19 @@ function renderResult() {
           <h4 class="diag-card-title"><i class="fa-solid fa-user-astronaut"></i> 위인 싱크로율 TOP 3</h4>
           <div class="diag-synchro-list">${synchroMarkup}</div>
           <div class="diag-recommend">
-            <h5><i class="fa-solid fa-dumbbell"></i> 추천 훈련 방향</h5>
-            <p>가장 보완이 필요한 영역은 <strong>${r.recommendArea.name}</strong>입니다.
+            <h5><i class="fa-solid fa-dumbbell"></i> 추천 훈련 방향 <span class="diag-weak-chip"><i class="fa-solid fa-triangle-exclamation"></i> 약점 알림</span></h5>
+            <p>가장 보완이 필요한 영역은 <strong>${r.recommendArea.name}(${r.scores[r.recommendArea.key] !== undefined ? r.scores[r.recommendArea.key] + '점' : '—'})</strong>입니다.
             ${recommendTrainable
               ? `<strong>${r.recommendArea.thinkerName}</strong>의 렌즈로 단련해 보세요 — “${r.recommendArea.lensQuestion}”`
               : '다양한 위인 렌즈를 직접 골라 사고의 폭을 넓혀보세요.'}
             ${r.subjectiveTopic ? `<br><span class="diag-topic-echo">입력하신 주제 「${escapeDiagHTML(r.subjectiveTopic)}」에 적용해 보면 더욱 효과적입니다.</span>` : ''}</p>
           </div>
         </div>
+      </div>
+
+      <div class="diag-result-grid diag-result-grid-second">
+        ${buildDepthSection()}
+        ${buildVsSection(r)}
       </div>
 
       <div class="diag-actions diag-actions-final">
@@ -699,3 +763,67 @@ if (btnCloseDiagnosis) {
 }
 
 window.openDiagnosisOverlay = openDiagnosisOverlay;
+
+/* ------------------------------------------------------------
+   8. 성장 아카이브 드로어 연동 (v1.6 추가분)
+   — thinkpt_diagnosis_history 기록을 훈련 기록과 시간순 통합 표시
+   — app.js renderLogs()가 아래 전역 헬퍼를 선택적으로 소비
+   ------------------------------------------------------------ */
+function formatDiagDrawerDate(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+/* 드로어 표시용 진단 항목 생성 — { kind, ts, html } 배열 반환 */
+window.getDiagnosisDrawerLogs = function () {
+  try {
+    const history = JSON.parse(localStorage.getItem('thinkpt_diagnosis_history') || '[]');
+    return history.map(r => {
+      const ts = Date.parse(r.date) || 0;
+      const s = r.scores || {};
+      const typeName = (r.primaryArea && r.primaryArea.typeName) ? r.primaryArea.typeName : '진단 결과';
+      const recommend = (r.recommendArea && r.recommendArea.name) ? r.recommendArea.name : '—';
+      const html = `
+        <div class="log-item log-item-diagnosis" data-ts="${ts}">
+          <div class="log-header">
+            <span class="log-tag log-tag-diagnosis"><i class="fa-solid fa-stethoscope"></i> 진단 · ${typeName}</span>
+            <span class="log-date">${formatDiagDrawerDate(r.date)}</span>
+          </div>
+          <div class="log-body">마인드 인바디 — 연결력 ${s.conn ?? 0} · 관찰력 ${s.obs ?? 0} · 단순화력 ${s.simp ?? 0} · 역발상력 ${s.inv ?? 0} (만점 ${r.maxPossible ?? '—'})
+추천 훈련: ${recommend}</div>
+          <button class="btn-delete-log" onclick="deleteDiagnosisEntry(${ts})">
+            <i class="fa-solid fa-trash-can"></i> Delete
+          </button>
+        </div>
+      `;
+      return { kind: 'diagnosis', ts, html };
+    });
+  } catch (e) {
+    return [];
+  }
+};
+
+/* 진단 기록 개별 삭제 — 훈련 기록과 동일한 확인 절차 */
+window.deleteDiagnosisEntry = function (ts) {
+  if (!confirm('이 진단 기록을 성장 아카이브에서 삭제하시겠습니까?')) return;
+  try {
+    const KEY = 'thinkpt_diagnosis_history';
+    const history = JSON.parse(localStorage.getItem(KEY) || '[]');
+    const next = history.filter(r => (Date.parse(r.date) || 0) !== ts);
+    localStorage.setItem(KEY, JSON.stringify(next));
+  } catch (e) { /* 저장소 접근 실패 시 무시 */ }
+  if (typeof window.renderLogs === 'function') window.renderLogs();
+};
+
+/* app.js의 초기 renderLogs()는 본 스크립트보다 먼저 실행되므로,
+   헬퍼 정의 완료 후 1회 재렌더하여 기존 진단 기록을 드로어에 반영 */
+if (typeof window.renderLogs === 'function') {
+  try { window.renderLogs(); } catch (e) { /* no-op */ }
+}

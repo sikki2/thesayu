@@ -15,7 +15,7 @@
     rel="stylesheet">
 
   <!-- CSS Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=2.1">
+  <link rel="stylesheet" href="styles.css?v=2.6">
 
   <!-- FontAwesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -191,6 +191,28 @@
     </div>
   </div>
 
+  <!-- Training Log Detail Overlay (성장 아카이브 → 훈련 결과 열람) -->
+  <div class="log-detail-overlay" id="log-detail-overlay">
+    <div class="overlay-close" id="btn-close-log-detail">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </div>
+    <div class="log-detail-card">
+      <span class="exercise-badge">훈련 기록</span>
+      <h2 class="log-detail-title" id="log-detail-title"></h2>
+      <p class="log-detail-date" id="log-detail-date"></p>
+      <div class="log-detail-body" id="log-detail-body"></div>
+      <div class="log-detail-actions">
+        <button class="btn-submit-thinking" id="btn-log-detail-retrain">
+          <span>이 렌즈로 다시 훈련</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification System -->
   <div class="toast-notification" id="toast-notification">오늘의 사고 단련이 성장 아카이브에 기록되었습니다.</div>
 
@@ -216,9 +238,9 @@
 
 
   <!-- JavaScript Main Application Script -->
-  <script src="app.js?v=2.7" defer></script>
+  <script src="app.js?v=2.9" defer></script>
   <!-- Creative Style Diagnosis Module -->
-  <script src="diagnosis.js?v=1.1" defer></script>
+  <script src="diagnosis.js?v=1.6" defer></script>
 </body>
 
 </html>

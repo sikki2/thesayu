@@ -1004,7 +1004,16 @@ function deleteLog(id) {
 }
 
 function renderLogs() {
-  if (logs.length === 0) {
+  // 진단 기록 병합 (diagnosis.js 로딩 시) — 시간순 통합 표시
+  const diagEntries = (typeof window.getDiagnosisDrawerLogs === 'function')
+    ? window.getDiagnosisDrawerLogs()
+    : [];
+  const merged = [
+    ...logs.map(log => ({ kind: 'training', ts: log.id, log })),
+    ...diagEntries
+  ].sort((a, b) => b.ts - a.ts);
+
+  if (merged.length === 0) {
     drawerContent.innerHTML = `
       <div class="empty-log-state">
         <div class="empty-icon"><i class="fa-solid fa-pen-nib"></i></div>
@@ -1015,7 +1024,12 @@ function renderLogs() {
   }
 
   drawerContent.innerHTML = '';
-  logs.forEach(log => {
+  merged.forEach(item => {
+    if (item.kind === 'diagnosis') {
+      drawerContent.insertAdjacentHTML('beforeend', item.html);
+      return;
+    }
+    const log = item.log;
     const logMarkup = `
       <div class="log-item" data-id="${log.id}">
         <div class="log-header">
@@ -1046,6 +1060,63 @@ function escapeHTML(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+// --- 4-1. 훈련 기록 상세 보기 (성장 아카이브 → 훈련 결과 열람) ---
+// 회귀 방지 수칙: 드로어 항목은 재렌더로 DOM이 교체되므로
+// 개별 리스너 금지, drawerContent 이벤트 위임 1개로만 처리한다.
+const logDetailOverlay = document.getElementById('log-detail-overlay');
+const logDetailTitle = document.getElementById('log-detail-title');
+const logDetailDate = document.getElementById('log-detail-date');
+const logDetailBody = document.getElementById('log-detail-body');
+const btnCloseLogDetail = document.getElementById('btn-close-log-detail');
+const btnLogDetailRetrain = document.getElementById('btn-log-detail-retrain');
+let logDetailCurrentModelId = null;
+
+function openLogDetail(id) {
+  const log = logs.find(l => l.id === id);
+  if (!log || !logDetailOverlay) return;
+
+  logDetailTitle.textContent = log.modelTitle;
+  logDetailDate.textContent = log.date;
+  logDetailBody.textContent = log.content;
+
+  // 다시 훈련 연동: 기록의 렌즈명과 일치하는 위인 모델 탐색
+  const model = mentalModels.find(m => m.koreanTitle === log.modelTitle);
+  logDetailCurrentModelId = model ? model.id : null;
+  btnLogDetailRetrain.style.display = model ? '' : 'none';
+
+  logDetailOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLogDetail() {
+  if (!logDetailOverlay) return;
+  logDetailOverlay.classList.remove('open');
+  document.body.style.overflow = 'auto';
+}
+
+if (drawerContent) {
+  drawerContent.addEventListener('click', (e) => {
+    if (e.target.closest('.btn-delete-log')) return; // 삭제 버튼은 기존 동작 유지
+    const item = e.target.closest('.log-item');
+    if (!item || !item.dataset.id) return; // 훈련 기록(data-id)만 상세 열람 대상
+    openLogDetail(Number(item.dataset.id));
+  });
+}
+
+if (btnCloseLogDetail) {
+  btnCloseLogDetail.addEventListener('click', closeLogDetail);
+}
+
+if (btnLogDetailRetrain) {
+  btnLogDetailRetrain.addEventListener('click', () => {
+    if (logDetailCurrentModelId === null) return;
+    closeLogDetail();
+    appDrawer.classList.remove('open');
+    selectedModelIndex = Number(logDetailCurrentModelId);
+    openExerciseWorkspace(logDetailCurrentModelId);
+  });
 }
 
 let gatherTimer = null;

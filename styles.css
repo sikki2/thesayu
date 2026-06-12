@@ -1921,7 +1921,8 @@ body {
 
 .diag-diamond {
   width: 100%;
-  max-width: 280px;
+  max-width: 100%;
+  height: auto;
   display: block;
   margin: 0 auto;
 }
@@ -2087,4 +2088,265 @@ body {
   .diagnosis-overlay { padding: 24px 16px; }
   .diag-result-grid { grid-template-columns: 1fr; }
   .diagnosis-overlay .overlay-close { top: 16px; right: 16px; }
+}
+
+/* ============================================================
+   진단 결과 화면 확장 (v2.2 추가분)
+   — 생각 깊이 4지표 · AI vs 내 답변 비교 · 약점 알림 칩
+   기존 .diag-result-card 카드 시스템과 동일한 디자인 언어 사용
+   ============================================================ */
+
+.diag-result-grid-second { margin-top: -8px; }
+
+/* 고도화 예정 배지 */
+.diag-pending-badge {
+  margin-left: auto;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--color-accent-purple);
+  border: 1px dashed rgba(131, 56, 236, 0.45);
+  background: rgba(131, 56, 236, 0.05);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+/* 약점 알림 칩 */
+.diag-weak-chip {
+  margin-left: auto;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #d97706;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: rgba(217, 119, 6, 0.07);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.diag-weak-chip i { color: #d97706; font-size: 0.62rem; }
+
+/* 생각 깊이 4지표 */
+.diag-depth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.diag-depth-tile {
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 13px 14px 12px;
+  background: rgba(255, 254, 252, 0.6);
+}
+.diag-depth-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.diag-depth-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.diag-depth-name i { color: var(--color-accent); font-size: 0.72rem; }
+.diag-depth-val {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.diag-depth-track {
+  margin-top: 9px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+.diag-depth-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(131, 56, 236, 0.22) 0 6px,
+    rgba(131, 56, 236, 0.08) 6px 12px
+  );
+}
+.diag-depth-desc {
+  margin-top: 8px;
+  font-size: 0.68rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* AI vs 내 답변 비교 */
+.diag-vs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.diag-vs-col {
+  border: 1px dashed var(--card-border-hover);
+  border-radius: 14px;
+  padding: 14px;
+  min-height: 108px;
+  background: rgba(255, 254, 252, 0.55);
+}
+.diag-vs-col p {
+  margin-top: 8px;
+  font-size: 0.76rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+.diag-vs-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+.diag-vs-ai { border-color: rgba(131, 56, 236, 0.3); }
+.diag-vs-ai .diag-vs-label,
+.diag-vs-ai .diag-vs-label i { color: var(--color-accent-purple); }
+.diag-vs-me .diag-vs-label i { color: var(--color-accent); }
+
+/* 모바일 대응 (기존 768px 분기와 동일 기준) */
+@media (max-width: 768px) {
+  .diag-depth-grid { grid-template-columns: 1fr 1fr; }
+  .diag-vs-grid { grid-template-columns: 1fr; }
+  .diag-pending-badge,
+  .diag-weak-chip { margin-left: 0; }
+  .diag-card-title { flex-wrap: wrap; }
+}
+
+/* ============================================================
+   마인드 인바디 차트 확대 (v2.4 추가분)
+   — 차트 라벨·점수 폰트 확대로 가독성 보강
+   기존 블록 무수정, 끝 추가 원칙 준수
+   ============================================================ */
+
+.diag-chart-label { font-size: 12.5px; }
+
+/* ============================================================
+   성장 아카이브 드로어 — 진단 기록 항목 (v2.5 추가분)
+   — 기존 .log-item 디자인 언어 유지, 타입 배지로 훈련/진단 구분
+   기존 블록 무수정, 끝 추가 원칙 준수
+   ============================================================ */
+
+.log-item-diagnosis {
+  border-left: 3px solid var(--color-accent-purple, #8338ec);
+}
+
+.log-tag-diagnosis {
+  color: var(--color-accent-purple, #8338ec);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.log-tag-diagnosis i { font-size: 10px; }
+
+/* ============================================================
+   훈련 기록 상세 오버레이 (v2.6 추가분)
+   — 성장 아카이브에서 훈련 기록 클릭 시 결과 열람
+   드로어(z-150) 위에 표시(z-250), 기존 오버레이 디자인 언어 유지
+   기존 블록 무수정, 끝 추가 원칙 준수
+   ============================================================ */
+
+/* 훈련 기록 항목에만 클릭 가능 시각 단서 (진단 항목 data-ts는 제외) */
+.log-item[data-id] {
+  cursor: pointer;
+  transition: border-color 0.3s, background 0.3s, transform 0.3s;
+}
+
+.log-item[data-id]:hover {
+  border-color: rgba(0, 186, 198, 0.35);
+  background: rgba(0, 186, 198, 0.04);
+  transform: translateX(-3px);
+}
+
+.log-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 254, 252, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  padding: 40px;
+}
+
+.log-detail-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.log-detail-card {
+  width: min(640px, 100%);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--card-bg-active);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 32px;
+  text-align: left;
+}
+
+.log-detail-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 6px;
+}
+
+.log-detail-date {
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.log-detail-body {
+  margin-top: 10px;
+  flex: 1;
+  min-height: 80px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  font-weight: 300;
+  white-space: pre-wrap;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 14px;
+}
+
+.log-detail-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .log-detail-overlay { padding: 20px 14px; }
+  .log-detail-card { padding: 22px; max-height: 86vh; }
 }
