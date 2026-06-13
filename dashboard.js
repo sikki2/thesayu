@@ -1,5 +1,13 @@
 /* ============================================================
-   생각PT — 마인드 대시보드 모듈 (dashboard.js) v1.0
+   생각PT — 마인드 대시보드 모듈 (dashboard.js) v1.3
+   ------------------------------------------------------------
+   v1.1 (7-2 고도화): ① 비교 기준 선택(첫 진단 대비 / 직전 진단 대비)
+                      ② 시계열 성장 추이 그래프(진단 3건 이상 누적 시)
+   v1.2: 생각 깊이 4지표 — depth.js(window.getDepthSummary) 연동.
+         모듈 미로딩·기록 0건이면 기존 '측정 대기' 문구 유지 (하위 호환)
+   v1.3: 성장 추이 그래프에 호버 툴팁 추가 — 컬럼별 가이드선 + 날짜·영역별 점수.
+         CSS :hover 만으로 동작(새 JS 리스너 없음 → #dashboard-body 위임 1개 유지).
+         신규 .dash-trend-{hit,guide,tip,col} 클래스만 사용, 기존 추이 렌더 무변경.
    ------------------------------------------------------------
    - 진단 기록(thinkpt_diagnosis_history)과 훈련 기록(thesayu_blank_logs)을
      "읽기 전용"으로 종합해 성장 대시보드 오버레이를 렌더링
@@ -23,7 +31,8 @@
   var btnClose = document.getElementById('btn-close-dashboard');
   if (!overlay || !body) return;
 
-  /* 비교 모드 상태: 'now'(현재) | 'compare'(첫 진단 대비) */
+  /* 비교 모드 상태: 'now'(현재) | 'first'(첫 진단 대비) | 'prev'(직전 진단 대비)
+     — v1.0의 'compare'는 'first'로 개명 (진단 2건일 때는 첫=직전이므로 'prev' 단일 노출) */
   var mode = 'now';
 
   /* ---------- 데이터 읽기 (읽기 전용, 실패 시 빈 배열) ---------- */
@@ -91,10 +100,116 @@
       dots + labels + '</svg>';
   }
 
+  /* ---------- [v1.1 신규] 시계열 성장 추이 그래프 (진단 3건 이상) ----------
+     - 최근 10건을 시간순(과거→현재)으로 정렬해 영역별 꺾은선 4개 렌더
+     - 기존 다이아몬드 기하값과 무관한 신규 차트 — 신규 클래스(.dash-trend-*)만 사용 */
+  var TREND_COLORS = { conn: '#8338ec', obs: '#00838c', simp: '#f7b32b', inv: '#e0356b' };
+
+  function buildTrendChart(history, max) {
+    var seq = history.slice(0, 10).reverse(); // 최신순 저장 → 시간순 표시
+    if (seq.length < 3) return '';
+    var W = 380, H = 196, PL = 30, PR = 14, PT = 14, PB = 28;
+    var iw = W - PL - PR, ih = H - PT - PB;
+    function x(i) { return PL + iw * i / (seq.length - 1); }
+    function y(v) { return PT + ih * (1 - Math.min(Math.max(v, 0) / max, 1)); }
+    function fmtDate(d) {
+      var t = new Date(d);
+      return isNaN(t) ? '' : (t.getMonth() + 1) + '.' + t.getDate();
+    }
+    /* 수평 그리드 + Y축 눈금 (0 / 절반 / 최대) */
+    var grid = [0, 0.5, 1].map(function (r) {
+      var gy = PT + ih * (1 - r);
+      return '<line x1="' + PL + '" y1="' + gy + '" x2="' + (W - PR) + '" y2="' + gy +
+        '" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>' +
+        '<text x="' + (PL - 6) + '" y="' + (gy + 3.5) + '" text-anchor="end" class="dash-trend-tick">' +
+        Math.round(max * r) + '</text>';
+    }).join('');
+    /* X축 날짜 라벨: 5건 이하 전부, 초과 시 처음·중간·끝만 */
+    var labelIdx = seq.length <= 5
+      ? seq.map(function (_, i) { return i; })
+      : [0, Math.floor((seq.length - 1) / 2), seq.length - 1];
+    var xLabels = labelIdx.map(function (i) {
+      return '<text x="' + x(i) + '" y="' + (H - 8) + '" text-anchor="middle" class="dash-trend-tick">' +
+        fmtDate(seq[i].date) + '</text>';
+    }).join('');
+    /* 영역별 폴리라인 + 점 */
+    var lines = AREA_KEYS.map(function (k) {
+      var pts = seq.map(function (r, i) {
+        return x(i) + ',' + y((r.scores && r.scores[k]) || 0);
+      }).join(' ');
+      var dots = seq.map(function (r, i) {
+        return '<circle cx="' + x(i) + '" cy="' + y((r.scores && r.scores[k]) || 0) +
+          '" r="2.6" fill="' + TREND_COLORS[k] + '"/>';
+      }).join('');
+      return '<polyline points="' + pts + '" fill="none" stroke="' + TREND_COLORS[k] +
+        '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>' + dots;
+    }).join('');
+    var legend = AREA_KEYS.map(function (k) {
+      return '<span class="dash-trend-key"><i style="background:' + TREND_COLORS[k] + '"></i>' +
+        areaMeta(k).name + '</span>';
+    }).join('');
+    /* [v1.3 추가] 호버 인터랙션 오버레이 — 컬럼별 가이드선 + 툴팁.
+       CSS :hover 만으로 동작(새 JS 리스너 없음 — 절대 규칙 7 유지). 신규 .dash-trend-* 클래스만 사용. */
+    var tipW = 104, tipRowH = 15, tipH = 20 + AREA_KEYS.length * tipRowH + 6;
+    function trendBand(i) {
+      var left = i === 0 ? PL : (x(i - 1) + x(i)) / 2;
+      var right = i === seq.length - 1 ? (W - PR) : (x(i) + x(i + 1)) / 2;
+      return [left, right - left];
+    }
+    var cols = seq.map(function (r, i) {
+      var cx = x(i), band = trendBand(i);
+      var tipX = Math.min(Math.max(cx - tipW / 2, PL), W - PR - tipW);
+      var tipY = PT + 2;
+      var rows = AREA_KEYS.map(function (k, ri) {
+        var ry = tipY + 20 + ri * tipRowH;
+        var val = (r.scores && r.scores[k]) || 0;
+        return '<circle cx="' + (tipX + 11) + '" cy="' + (ry - 3.5) + '" r="3" fill="' + TREND_COLORS[k] + '"/>' +
+          '<text x="' + (tipX + 19) + '" y="' + ry + '" class="dash-trend-tip-row">' + areaMeta(k).name + '</text>' +
+          '<text x="' + (tipX + tipW - 9) + '" y="' + ry + '" text-anchor="end" class="dash-trend-tip-val">' + val + '</text>';
+      }).join('');
+      var tip = '<g class="dash-trend-tip">' +
+        '<rect class="dash-trend-tip-bg" x="' + tipX + '" y="' + tipY + '" width="' + tipW + '" height="' + tipH + '" rx="8"/>' +
+        '<text class="dash-trend-tip-date" x="' + (tipX + 11) + '" y="' + (tipY + 15) + '">' + fmtDate(r.date) + ' 진단</text>' +
+        rows + '</g>';
+      return '<g class="dash-trend-col">' +
+        '<line class="dash-trend-guide" x1="' + cx + '" y1="' + PT + '" x2="' + cx + '" y2="' + (PT + ih) + '"/>' +
+        '<rect class="dash-trend-hit" x="' + band[0] + '" y="' + PT + '" width="' + band[1] + '" height="' + ih + '"/>' +
+        tip + '</g>';
+    }).join('');
+    return '<section class="dash-card dash-card-wide dash-trend-card">' +
+      '<h3 class="dash-card-label">성장 추이 <small class="dash-trend-count">최근 ' + seq.length + '회 진단</small></h3>' +
+      '<svg class="dash-trend-svg" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" ' +
+      'role="img" aria-label="진단 점수 시계열 추이">' + grid + lines + xLabels + cols + '</svg>' +
+      '<div class="dash-trend-legend">' + legend + '</div>' +
+      '</section>';
+  }
+
   /* ---------- HTML 이스케이프 (훈련 회고 등 사용자 입력 표시용) ---------- */
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  /* ---------- [v1.2 신규] 생각 깊이 4지표 미니 블록 ----------
+     depth.js의 window.getDepthSummary 소비 (typeof 가드).
+     미로딩·측정 가능 기록 0건이면 기존 '측정 대기' 문구 그대로 반환 */
+  var DEPTH_META = [
+    { key: 'fresh', name: '신선도' }, { key: 'concrete', name: '구체도' },
+    { key: 'connect', name: '연결도' }, { key: 'action', name: '실행도' }
+  ];
+  function buildDepthBlock() {
+    var pending = '<p class="dash-pending"><span class="diag-pending-badge">측정 대기</span> 신선도·구체도·연결도·실행도는 훈련 답변 기반 AI 분석 연동 후 제공됩니다.</p>';
+    if (typeof window.getDepthSummary !== 'function') return pending;
+    var d = window.getDepthSummary(5);
+    if (!d || !d.count || !d.metrics) return pending;
+    var rows = DEPTH_META.map(function (m) {
+      var v = d.metrics[m.key] || 0;
+      return '<div class="dash-depth-row"><span class="k">' + m.name + '</span>' +
+        '<span class="dash-depth-track"><i style="width:' + v + '%"></i></span>' +
+        '<span class="v">' + v + '</span></div>';
+    }).join('');
+    return '<div class="dash-depth">' + rows + '</div>' +
+      '<p class="dash-hint">최근 훈련 ' + d.count + '건 기준 · 규칙 기반 베타 (LLM 정밀 채점 고도화 예정)</p>';
   }
 
   /* ---------- 렌더 ---------- */
@@ -115,8 +230,12 @@
 
     var latest = history[0];
     var first = history[history.length - 1];
+    var prev = history[1] || null;
     var hasCompare = history.length >= 2;
-    var comparing = mode === 'compare' && hasCompare;
+    /* 비교 기준 레코드 선택: first(첫 진단) / prev(직전 진단) — 모드 무효 시 비교 안 함 */
+    var baseRecord = mode === 'first' ? first : mode === 'prev' ? prev : null;
+    var comparing = hasCompare && !!baseRecord;
+    var baseLabel = mode === 'first' ? '첫 진단' : '직전 진단';
     var max = latest.maxPossible || 13;
 
     /* 유형 선언 */
@@ -128,7 +247,7 @@
       var now = (latest.scores && latest.scores[k]) || 0;
       var delta = '';
       if (comparing) {
-        var diff = now - ((first.scores && first.scores[k]) || 0);
+        var diff = now - ((baseRecord.scores && baseRecord.scores[k]) || 0);
         delta = diff > 0 ? '<span class="dash-delta up">▲ ' + diff + '</span>'
           : diff < 0 ? '<span class="dash-delta down">▼ ' + (-diff) + '</span>'
             : '<span class="dash-delta">—</span>';
@@ -192,17 +311,23 @@
       '    <p class="dash-date">최근 진단 ' + esc(dateStr) + ' · 총 진단 ' + history.length + '회 · 훈련 ' + logs.length + '회</p>' +
       '  </div>' +
       (hasCompare
-        ? '<div class="dash-toggle" role="tablist" aria-label="훈련 전후 비교">' +
-          '<button data-action="mode-now" class="' + (comparing ? '' : 'on') + '">현재</button>' +
-          '<button data-action="mode-compare" class="' + (comparing ? 'on' : '') + '">첫 진단 대비</button></div>'
+        ? '<div class="dash-toggle" role="tablist" aria-label="훈련 전후 비교 기준">' +
+          '<button data-action="mode-now" class="' + (mode === 'now' ? 'on' : '') + '">현재</button>' +
+          '<button data-action="mode-prev" class="' + (mode === 'prev' ? 'on' : '') + '">' +
+          (history.length === 2 ? '이전 진단 대비' : '직전 대비') + '</button>' +
+          (history.length >= 3
+            ? '<button data-action="mode-first" class="' + (mode === 'first' ? 'on' : '') + '">첫 진단 대비</button>'
+            : '') +
+          '</div>'
         : '') +
       '</div>' +
       '<div class="dash-grid">' +
       '  <section class="dash-card">' +
       '    <h3 class="dash-card-label">마인드 인바디</h3>' +
-           buildDashboardDiamond(latest.scores || {}, comparing ? (first.scores || {}) : null, max) +
+           buildDashboardDiamond(latest.scores || {}, comparing ? (baseRecord.scores || {}) : null, max) +
       (comparing
-        ? '<p class="dash-legend"><i class="dash-sw now"></i>현재&nbsp;&nbsp;<i class="dash-sw ghost"></i>첫 진단</p>'
+        ? '<p class="dash-legend"><i class="dash-sw now"></i>현재&nbsp;&nbsp;<i class="dash-sw ghost"></i>' +
+          baseLabel + (baseRecord.date ? ' (' + new Date(baseRecord.date).toLocaleDateString('ko-KR') + ')' : '') + '</p>'
         : '') +
       '    <div class="dash-strip">' + strip + '</div>' + weakChip +
       '  </section>' +
@@ -211,9 +336,10 @@
       '    <div class="dash-sync-list">' + (syncRows || '<p class="dash-muted">데이터 없음</p>') + '</div>' +
       '    <p class="dash-hint">카드를 누르면 해당 위인 렌즈 훈련으로 이동합니다</p>' +
       '    <h3 class="dash-card-label" style="margin-top:18px">생각 깊이 4지표</h3>' +
-      '    <p class="dash-pending"><span class="diag-pending-badge">측정 대기</span> 신선도·구체도·연결도·실행도는 훈련 답변 기반 AI 분석 연동 후 제공됩니다.</p>' +
+           buildDepthBlock() +
       '  </section>' +
       '</div>' +
+      buildTrendChart(history, max) +
       '<section class="dash-card dash-card-wide">' +
       '  <div class="dash-tl-head"><h3 class="dash-card-label">최근 기록</h3>' +
       '  <button class="btn-outline-pill dash-tl-more" data-action="open-archive">성장 아카이브 전체 보기</button></div>' +
@@ -247,7 +373,8 @@
     var action = el.getAttribute('data-action');
 
     if (action === 'mode-now') { mode = 'now'; render(); return; }
-    if (action === 'mode-compare') { mode = 'compare'; render(); return; }
+    if (action === 'mode-first') { mode = 'first'; render(); return; }
+    if (action === 'mode-prev') { mode = 'prev'; render(); return; }
 
     if (action === 'go-diagnosis') {
       closeDashboard();

@@ -2677,3 +2677,223 @@ body {
   .dash-weak-btn { margin-left: 0; }
   #btn-header-dashboard-trigger { padding: 8px 12px; font-size: 12px; }
 }
+
+/* ============================================================
+   v2.8 추가 블록 — 진단 기록 재열람 (인계문서 8절 1번 작업)
+   기존 블록 무수정, 끝 추가 원칙 준수
+   ============================================================ */
+
+/* 드로어 진단 항목: 이제 클릭 가능 — 훈련 항목(틸)과 구분되는 보라 톤 호버 단서 */
+.log-item-diagnosis[data-ts] {
+  cursor: pointer;
+  transition: border-color 0.3s, background 0.3s, transform 0.3s;
+}
+
+.log-item-diagnosis[data-ts]:hover {
+  border-color: rgba(131, 56, 236, 0.35);
+  background: rgba(131, 56, 236, 0.04);
+  transform: translateX(-3px);
+}
+
+/* 재열람 배지: 일반 진단 완료 배지와 시각적으로 구분 */
+.diag-badge-replay {
+  background: rgba(131, 56, 236, 0.08);
+  border: 1px solid rgba(131, 56, 236, 0.25);
+  color: var(--color-accent-purple);
+}
+
+/* ============================================================
+   v2.9 추가 블록 — 7-2 고도화 (비교 기준 선택 · 성장 추이 그래프 ·
+   재열람 최신 대비 변화) — 기존 블록 무수정, 끝 추가 원칙 준수
+   ============================================================ */
+
+/* 성장 추이 카드 (대시보드 — 진단 3건 이상에서만 렌더) */
+.dash-trend-card { margin-bottom: 20px; }
+
+.dash-trend-count {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 6px;
+  letter-spacing: 0;
+}
+
+.dash-trend-svg {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  margin: 4px auto 0;
+}
+
+.dash-trend-tick {
+  font-size: 9.5px;
+  fill: rgba(0, 0, 0, 0.45);
+  font-family: inherit;
+}
+
+.dash-trend-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 10px;
+}
+
+.dash-trend-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.dash-trend-key i {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* 재열람 화면 — 최신 진단 대비 변화 한 줄 요약 */
+.diag-replay-compare {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 10px 0 2px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: rgba(131, 56, 236, 0.05);
+  border: 1px dashed rgba(131, 56, 236, 0.25);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.diag-replay-compare > i { color: var(--color-accent-purple); }
+
+.diag-replay-compare span { white-space: nowrap; }
+
+.diag-replay-compare b { font-weight: 700; font-style: normal; }
+.diag-replay-compare b.up { color: var(--color-accent); }
+.diag-replay-compare b.down { color: #e0356b; }
+.diag-replay-compare b.flat { color: var(--text-muted); font-weight: 500; }
+
+/* 모바일: 추이 범례 줄바꿈 여유 */
+@media (max-width: 560px) {
+  .dash-trend-legend { gap: 6px 12px; }
+  .diag-replay-compare { font-size: 12px; }
+}
+
+/* ============================================================
+   v3.0 추가 블록 — 생각 깊이 4지표 1차 연동 (depth.js v1.0)
+   기존 블록 무수정, 끝 추가 원칙 준수
+   ============================================================ */
+
+/* 진단 결과 화면: 측정 활성 배지 (기존 .diag-pending-badge 위에 톤만 덮음) */
+.diag-depth-badge-live {
+  background: rgba(var(--color-accent-rgb), 0.12);
+  border-color: rgba(var(--color-accent-rgb), 0.3);
+  color: #00838c;
+}
+
+/* 대시보드: 4지표 미니 바 */
+.dash-depth {
+  display: grid;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.dash-depth-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-depth-row .k {
+  flex: 0 0 52px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.dash-depth-row .v {
+  flex: 0 0 28px;
+  text-align: right;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-depth-track {
+  flex: 1;
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.dash-depth-track i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--color-accent-rgb), 0.55), rgba(131, 56, 236, 0.75));
+  transition: width 0.5s ease;
+}
+
+@media (max-width: 560px) {
+  .dash-depth-row .k { flex-basis: 48px; font-size: 12px; }
+}
+
+/* ============================================================
+   [v3.1] 성장 추이 호버 툴팁 (dashboard.js v1.3 연동)
+   - 신규 클래스만 추가, 기존 .dash-trend-* 블록 무수정
+   - JS 리스너 없이 CSS :hover 로만 동작
+   ============================================================ */
+.dash-trend-svg .dash-trend-hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+.dash-trend-svg .dash-trend-guide {
+  stroke: rgba(0, 0, 0, 0.28);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+.dash-trend-svg .dash-trend-tip {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+.dash-trend-svg .dash-trend-col:hover .dash-trend-guide,
+.dash-trend-svg .dash-trend-col:hover .dash-trend-tip {
+  opacity: 1;
+}
+.dash-trend-svg .dash-trend-tip-bg {
+  fill: var(--nav-bg, #121214);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.22));
+}
+.dash-trend-tip-date {
+  fill: var(--bg-color, #fffefc);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: inherit;
+}
+.dash-trend-tip-row {
+  fill: rgba(255, 254, 252, 0.82);
+  font-size: 10px;
+  font-family: inherit;
+}
+.dash-trend-tip-val {
+  fill: var(--bg-color, #fffefc);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: inherit;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-trend-svg .dash-trend-guide,
+  .dash-trend-svg .dash-trend-tip { transition: none; }
+}

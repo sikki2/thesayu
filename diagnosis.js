@@ -7,6 +7,10 @@
    - 모든 채점은 규칙 기반(LLM 미사용), 기록은 localStorage에만 저장
    - app.js의 전역(mentalModels, openExerciseWorkspace, enterScatterState,
      selectedModelIndex)을 읽기/호출만 하며 app.js 코드는 수정하지 않음
+   - v1.8: 재열람 화면에 '최신 진단 대비 변화' 한 줄 요약 추가
+     (buildReplayCompareNote — localStorage 읽기 전용, 7-2 ③)
+   - v1.9: 생각 깊이 4지표 — depth.js(window.getDepthSummary) 연동.
+     모듈 미로딩·기록 0건이면 기존 '측정 대기' 출력 그대로 (하위 호환)
    ============================================================ */
 
 /* ------------------------------------------------------------
@@ -584,29 +588,45 @@ function buildDiamondChart(scores, maxPossible) {
 
 /* 생각 깊이 4지표 — LLM 연동 전이므로 자리(placeholder) 상태로 렌더 */
 const DIAG_DEPTH_METRICS = [
-  { icon: 'fa-seedling',        name: '신선도', desc: 'AI 초안과 비교한 차별성·독창성 수준' },
-  { icon: 'fa-magnifying-glass', name: '구체도', desc: '추상적 표현 대비 구체적 표현의 활용 정도' },
-  { icon: 'fa-circle-nodes',    name: '연결도', desc: '서로 다른 영역과 관점을 연결하는 수준' },
-  { icon: 'fa-person-running',  name: '실행도', desc: '실제 행동·결과물로 이어질 가능성' }
+  { key: 'fresh',    icon: 'fa-seedling',        name: '신선도', desc: 'AI 초안과 비교한 차별성·독창성 수준' },
+  { key: 'concrete', icon: 'fa-magnifying-glass', name: '구체도', desc: '추상적 표현 대비 구체적 표현의 활용 정도' },
+  { key: 'connect',  icon: 'fa-circle-nodes',    name: '연결도', desc: '서로 다른 영역과 관점을 연결하는 수준' },
+  { key: 'action',   icon: 'fa-person-running',  name: '실행도', desc: '실제 행동·결과물로 이어질 가능성' }
 ];
 
 function buildDepthSection() {
-  const tiles = DIAG_DEPTH_METRICS.map(m => `
+  /* [v1.9] depth.js(생각 깊이 4지표 모듈) 연동 — typeof 가드로 하위 호환:
+     모듈 미로딩 또는 측정 가능한 훈련 기록 0건이면 기존 '측정 대기' 출력 유지 */
+  const depth = (typeof window.getDepthSummary === 'function') ? window.getDepthSummary(5) : null;
+  const measured = !!(depth && depth.count > 0 && depth.metrics);
+
+  const tiles = DIAG_DEPTH_METRICS.map(m => {
+    const v = measured ? depth.metrics[m.key] : null;
+    return `
     <div class="diag-depth-tile">
       <div class="diag-depth-head">
         <span class="diag-depth-name"><i class="fa-solid ${m.icon}"></i> ${m.name}</span>
-        <span class="diag-depth-val">—</span>
+        <span class="diag-depth-val">${v == null ? '—' : v}</span>
       </div>
-      <div class="diag-depth-track"><div class="diag-depth-fill"></div></div>
+      <div class="diag-depth-track"><div class="diag-depth-fill"${v == null ? '' : ` style="width:${v}%"`}></div></div>
       <p class="diag-depth-desc">${m.desc}</p>
     </div>
-  `).join('');
+  `;
+  }).join('');
+
+  const badge = measured
+    ? `<span class="diag-pending-badge diag-depth-badge-live">규칙 기반 베타 · 최근 ${depth.count}회 훈련</span>`
+    : `<span class="diag-pending-badge">LLM 정량 채점 · 고도화 예정</span>`;
+  const foot = measured
+    ? `최근 훈련 답변 ${depth.count}건을 규칙 기반으로 분석한 평균값입니다. 정식 버전에서는 LLM 정밀 채점과 <strong>훈련 전후 변화</strong>가 함께 제공됩니다.`
+    : `정식 버전에서는 훈련 답변을 LLM이 분석해 네 지표를 정량화하고, <strong>훈련 전후 변화</strong>를 함께 보여드립니다.`;
+
   return `
     <div class="diag-result-card">
       <h4 class="diag-card-title"><i class="fa-solid fa-water"></i> 생각 깊이 4지표
-        <span class="diag-pending-badge">LLM 정량 채점 · 고도화 예정</span></h4>
+        ${badge}</h4>
       <div class="diag-depth-grid">${tiles}</div>
-      <p class="diag-card-foot">정식 버전에서는 훈련 답변을 LLM이 분석해 네 지표를 정량화하고, <strong>훈련 전후 변화</strong>를 함께 보여드립니다.</p>
+      <p class="diag-card-foot">${foot}</p>
     </div>
   `;
 }
@@ -634,6 +654,29 @@ function buildVsSection(r) {
   `;
 }
 
+/* [v1.8] 재열람 화면 전용 — 보고 있는 과거 기록과 "최신 진단" 사이의 영역별 변화 요약
+   - localStorage 읽기 전용. 보고 있는 기록이 곧 최신이거나 비교 불가 시 빈 문자열(표시 생략)
+   - 인계문서 7-2 ③: 재열람 화면에 당시 대비 현재 비교 표시 (결정: 배지 아래 한 줄 요약형) */
+function buildReplayCompareNote(r) {
+  try {
+    const history = JSON.parse(localStorage.getItem('thinkpt_diagnosis_history') || '[]');
+    if (history.length < 2) return '';
+    const latest = history[0];
+    if (!latest || !latest.scores || !r.scores) return '';
+    if (Date.parse(latest.date) === Date.parse(r.date)) return ''; // 최신 기록 자체를 재열람 중
+    const parts = ['conn', 'obs', 'simp', 'inv'].map(k => {
+      const name = (DIAG_AREAS[k] && DIAG_AREAS[k].name) || k;
+      const diff = (latest.scores[k] || 0) - (r.scores[k] || 0);
+      const mark = diff > 0 ? `<b class="up">▲${diff}</b>`
+        : diff < 0 ? `<b class="down">▼${-diff}</b>`
+          : '<b class="flat">—</b>';
+      return `<span>${name} ${mark}</span>`;
+    }).join('');
+    return `<p class="diag-replay-compare"><i class="fa-solid fa-arrow-trend-up"></i>
+      이 기록 이후 최신 진단(${new Date(latest.date).toLocaleDateString('ko-KR')})까지의 변화 ${parts}</p>`;
+  } catch (e) { return ''; }
+}
+
 function renderResult() {
   const r = diagState.result;
   const primary = r.primaryArea;
@@ -659,7 +702,9 @@ function renderResult() {
 
   diagBody.innerHTML = `
     <div class="diag-screen diag-result">
-      <span class="diag-badge">진단 완료 · 마인드 인바디</span>
+      ${diagState.isReplay
+        ? `<span class="diag-badge diag-badge-replay"><i class="fa-solid fa-clock-rotate-left"></i> 지난 진단 다시 보기 · ${new Date(r.date).toLocaleDateString('ko-KR')}</span>${buildReplayCompareNote(r)}`
+        : `<span class="diag-badge">진단 완료 · 마인드 인바디</span>`}
       <h2 class="diag-title">당신은 <em class="diag-type">${primary.typeName}</em>에 가깝습니다</h2>
       <p class="diag-sub">${escapeDiagHTML(primary.trait)}</p>
       ${stableNote}
@@ -696,7 +741,9 @@ function renderResult() {
         <button class="diag-btn-ghost" id="diag-btn-browse">위인 직접 선택하기</button>
         <button class="diag-btn-ghost" id="diag-btn-copy"><i class="fa-solid fa-copy"></i> 결과 복사</button>
       </div>
-      <p class="diag-saved-note"><i class="fa-solid fa-floppy-disk"></i> 진단 결과가 이 브라우저의 성장 아카이브에 저장되었습니다.</p>
+      ${diagState.isReplay
+        ? `<p class="diag-saved-note"><i class="fa-solid fa-box-archive"></i> 성장 아카이브에 저장된 진단 기록입니다. 점수는 당시 응답 기준입니다.</p>`
+        : `<p class="diag-saved-note"><i class="fa-solid fa-floppy-disk"></i> 진단 결과가 이 브라우저의 성장 아카이브에 저장되었습니다.</p>`}
     </div>
   `;
 
@@ -708,6 +755,8 @@ function renderResult() {
   }
   document.getElementById('diag-btn-browse').addEventListener('click', () => {
     closeDiagnosisOverlay();
+    const drawerEl = document.getElementById('app-drawer');
+    if (drawerEl) drawerEl.classList.remove('open'); // 재열람 진입 시 열려 있던 드로어 정리
     try { enterScatterState(); } catch (e) { /* app.js 미로딩 시 무시 */ }
   });
   document.getElementById('diag-btn-copy').addEventListener('click', (e) => {
@@ -729,6 +778,8 @@ function renderResult() {
    ------------------------------------------------------------ */
 function startRecommendedTraining(thinkerKey) {
   closeDiagnosisOverlay();
+  const drawerEl = document.getElementById('app-drawer');
+  if (drawerEl) drawerEl.classList.remove('open'); // 재열람 진입 시 열려 있던 드로어 정리
   try {
     const model = mentalModels.find(m => m.key === thinkerKey);
     if (model) {
@@ -763,6 +814,29 @@ if (btnCloseDiagnosis) {
 }
 
 window.openDiagnosisOverlay = openDiagnosisOverlay;
+
+/* 진단 기록 재열람 (v1.7 — 성장 아카이브 드로어의 진단 항목 클릭 → 저장된 결과 재렌더)
+   - ts: 드로어 항목의 data-ts (Date.parse(result.date) 값)
+   - 매번 새 diagState를 만들어 저장된 결과만 주입하므로 진행 중 진단과 충돌 없음
+   - renderResult()를 그대로 재사용하며 저장 로직(saveDiagnosisResult)은 거치지 않음 (중복 저장 없음)
+   - 기록 미발견(삭제 직후 등) 시 무동작 */
+function openDiagnosisReplay(ts) {
+  if (!diagOverlay) return;
+  let history = [];
+  try {
+    history = JSON.parse(localStorage.getItem('thinkpt_diagnosis_history') || '[]');
+  } catch (e) { return; }
+  const record = history.find(r => Date.parse(r.date) === Number(ts));
+  if (!record) return;
+  diagState = createDiagState();
+  diagState.result = record;
+  diagState.screen = 'result';
+  diagState.isReplay = true;
+  renderResult();
+  diagOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+window.openDiagnosisReplay = openDiagnosisReplay;
 
 /* ------------------------------------------------------------
    8. 성장 아카이브 드로어 연동 (v1.6 추가분)

@@ -1099,6 +1099,14 @@ function closeLogDetail() {
 if (drawerContent) {
   drawerContent.addEventListener('click', (e) => {
     if (e.target.closest('.btn-delete-log')) return; // 삭제 버튼은 기존 동작 유지
+    const diagItem = e.target.closest('.log-item-diagnosis');
+    if (diagItem && diagItem.dataset.ts) {
+      // 진단 기록 → 저장된 결과 화면 재열람 (diagnosis.js 미로딩 시 무반응 — 하위 호환)
+      if (typeof window.openDiagnosisReplay === 'function') {
+        window.openDiagnosisReplay(Number(diagItem.dataset.ts));
+      }
+      return;
+    }
     const item = e.target.closest('.log-item');
     if (!item || !item.dataset.id) return; // 훈련 기록(data-id)만 상세 열람 대상
     openLogDetail(Number(item.dataset.id));
