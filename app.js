@@ -922,6 +922,7 @@ function initBackgroundInteractions() {
 
 // --- 3. Thought Expansion Exercise Workspace ---
 function openExerciseWorkspace(index) {
+  window.__sayuReturn = null; // [복귀fix] 진입 시 출발지 플래그 초기화 (외부 진입 직후 재설정)
   const model = mentalModels.find(m => Number(m.id) === Number(index));
   if (!model) return;
   exTitle.textContent = model.koreanTitle;
@@ -1124,6 +1125,7 @@ if (btnLogDetailRetrain) {
     appDrawer.classList.remove('open');
     selectedModelIndex = Number(logDetailCurrentModelId);
     openExerciseWorkspace(logDetailCurrentModelId);
+    window.__sayuReturn = 'archive'; // [복귀fix] 아카이브에서 재훈련 진입 → 닫으면 아카이브로 복귀
   });
 }
 
@@ -1131,6 +1133,7 @@ let gatherTimer = null;
 let scatterTimerId = null;
 
 function enterScatterState() {
+  window.__sayuReturn = null; // [복귀fix] 진입 시 출발지 플래그 초기화 (외부 진입 직후 재설정)
   const playground = document.querySelector('.main-playground');
   if (playground) {
     window.clearTimeout(gatherTimer);
@@ -1214,6 +1217,8 @@ function setupEventListeners() {
   if (btnBackCarousel) {
     btnBackCarousel.addEventListener('click', () => {
       exitScatterState();
+      // [복귀fix] 진단 결과/아카이브에서 진입했다면 그 화면으로 복귀
+      if (window.__sayuConsumeReturn && window.__sayuConsumeReturn()) return;
       startCarouselAutoplay();
     });
   }
@@ -1223,6 +1228,8 @@ function setupEventListeners() {
     exerciseOverlay.classList.remove('open');
     document.body.style.overflow = 'auto';
     exitScatterState();
+    // [복귀fix] 진단 결과/아카이브에서 진입했다면 그 화면으로 복귀
+    if (window.__sayuConsumeReturn && window.__sayuConsumeReturn()) return;
     startCarouselAutoplay();
   });
 

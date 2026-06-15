@@ -757,7 +757,7 @@ function renderResult() {
     closeDiagnosisOverlay();
     const drawerEl = document.getElementById('app-drawer');
     if (drawerEl) drawerEl.classList.remove('open'); // 재열람 진입 시 열려 있던 드로어 정리
-    try { enterScatterState(); } catch (e) { /* app.js 미로딩 시 무시 */ }
+    try { enterScatterState(); window.__sayuReturn = 'diagnosis'; } catch (e) { /* app.js 미로딩 시 무시 */ }
   });
   document.getElementById('diag-btn-copy').addEventListener('click', (e) => {
     const lines = [
@@ -785,10 +785,11 @@ function startRecommendedTraining(thinkerKey) {
     if (model) {
       selectedModelIndex = Number(model.id);
       openExerciseWorkspace(model.id);
+      window.__sayuReturn = 'diagnosis'; // [복귀fix] 진단 결과에서 진입 → 닫으면 결과로 복귀
       return;
     }
   } catch (e) { /* 전역 미존재 시 아래 폴백 */ }
-  try { enterScatterState(); } catch (e) { /* no-op */ }
+  try { enterScatterState(); window.__sayuReturn = 'diagnosis'; } catch (e) { /* no-op */ }
 }
 
 /* ------------------------------------------------------------
@@ -837,6 +838,36 @@ function openDiagnosisReplay(ts) {
   document.body.style.overflow = 'hidden';
 }
 window.openDiagnosisReplay = openDiagnosisReplay;
+
+/* ------------------------------------------------------------
+   복귀 내비게이션 (버그fix)
+   - 진단 결과 화면 또는 성장 아카이브에서 위인 선택/둘러보기로 훈련에 진입한 뒤
+     '돌아가기' 또는 워크스페이스 닫기를 누르면, 메인(진단 시작)이 아니라
+     출발지(진단 결과 화면 / 성장 아카이브 드로어)로 복귀시킨다.
+   - app.js의 두 종료 핸들러(btn-back-carousel, btn-close-exercise)와
+     아카이브 재훈련 핸들러가 window.__sayuReturn / __sayuConsumeReturn으로 연동.
+   - 반환 true = 복귀 처리함(메인 복귀 생략) / false = 기존대로 메인 복귀.
+   ------------------------------------------------------------ */
+window.__sayuConsumeReturn = function () {
+  var origin = window.__sayuReturn;
+  window.__sayuReturn = null; // 1회성 소비 (스테일 방지)
+  if (origin === 'diagnosis') {
+    // 마지막 진단 결과(신규/재열람 공통)를 그대로 다시 표시
+    if (diagOverlay && diagState && diagState.result) {
+      diagOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      try { renderResult(); } catch (e) { return false; }
+      return true;
+    }
+    return false;
+  }
+  if (origin === 'archive') {
+    var drawer = document.getElementById('app-drawer');
+    if (drawer) { drawer.classList.add('open'); return true; }
+    return false;
+  }
+  return false;
+};
 
 /* ------------------------------------------------------------
    8. 성장 아카이브 드로어 연동 (v1.6 추가분)

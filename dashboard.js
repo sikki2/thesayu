@@ -1,5 +1,5 @@
 /* ============================================================
-   생각PT — 마인드 대시보드 모듈 (dashboard.js) v1.3
+   생각PT — 마인드 대시보드 모듈 (dashboard.js) v1.5
    ------------------------------------------------------------
    v1.1 (7-2 고도화): ① 비교 기준 선택(첫 진단 대비 / 직전 진단 대비)
                       ② 시계열 성장 추이 그래프(진단 3건 이상 누적 시)
@@ -8,6 +8,14 @@
    v1.3: 성장 추이 그래프에 호버 툴팁 추가 — 컬럼별 가이드선 + 날짜·영역별 점수.
          CSS :hover 만으로 동작(새 JS 리스너 없음 → #dashboard-body 위임 1개 유지).
          신규 .dash-trend-{hit,guide,tip,col} 클래스만 사용, 기존 추이 렌더 무변경.
+   v1.4: 추이선 강조 — 라인/범례 호버 시 해당 영역만 진하게, 나머지 흐리게.
+         각 라인을 <g.dash-trend-series data-area>로 감싸고 범례에 data-area 부여.
+         강조는 styles.css :has() 규칙만으로 동작(새 JS 리스너 0 — 절대 규칙 7 유지).
+   v1.5: 생각 깊이 4지표 시계열(buildDepthTrend) — depth.js의 공개 순수함수
+         window.computeThinkingDepth만 소비(typeof 가드). depth.js·캐시·fetch 무접촉
+         (절대 규칙 12 유지). 추이 차트 시각 시스템(.dash-trend-*) 재사용해 툴팁·강조 공유,
+         정의는 무수정. 측정 가능 훈련 3건 이상일 때만 노출. 신규 클래스는 .dash-dtrend-card 하나.
+         ※ LLM 정밀 채점 재개(11절)는 dashboard를 v1.6 이상으로 부여할 것(버전 충돌 방지).
    ------------------------------------------------------------
    - 진단 기록(thinkpt_diagnosis_history)과 훈련 기록(thesayu_blank_logs)을
      "읽기 전용"으로 종합해 성장 대시보드 오버레이를 렌더링
@@ -133,6 +141,8 @@
         fmtDate(seq[i].date) + '</text>';
     }).join('');
     /* 영역별 폴리라인 + 점 */
+    /* [v1.4 추가] 각 영역 라인을 <g class="dash-trend-series" data-area>로 감싸 호버 강조 대상화.
+       강조는 styles.css의 :has() 규칙만으로 동작(새 JS 리스너 0 — 절대 규칙 7 유지). */
     var lines = AREA_KEYS.map(function (k) {
       var pts = seq.map(function (r, i) {
         return x(i) + ',' + y((r.scores && r.scores[k]) || 0);
@@ -141,11 +151,12 @@
         return '<circle cx="' + x(i) + '" cy="' + y((r.scores && r.scores[k]) || 0) +
           '" r="2.6" fill="' + TREND_COLORS[k] + '"/>';
       }).join('');
-      return '<polyline points="' + pts + '" fill="none" stroke="' + TREND_COLORS[k] +
-        '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>' + dots;
+      return '<g class="dash-trend-series" data-area="' + k + '">' +
+        '<polyline points="' + pts + '" fill="none" stroke="' + TREND_COLORS[k] +
+        '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>' + dots + '</g>';
     }).join('');
     var legend = AREA_KEYS.map(function (k) {
-      return '<span class="dash-trend-key"><i style="background:' + TREND_COLORS[k] + '"></i>' +
+      return '<span class="dash-trend-key" data-area="' + k + '"><i style="background:' + TREND_COLORS[k] + '"></i>' +
         areaMeta(k).name + '</span>';
     }).join('');
     /* [v1.3 추가] 호버 인터랙션 오버레이 — 컬럼별 가이드선 + 툴팁.
@@ -180,6 +191,104 @@
       '<h3 class="dash-card-label">성장 추이 <small class="dash-trend-count">최근 ' + seq.length + '회 진단</small></h3>' +
       '<svg class="dash-trend-svg" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" ' +
       'role="img" aria-label="진단 점수 시계열 추이">' + grid + lines + xLabels + cols + '</svg>' +
+      '<div class="dash-trend-legend">' + legend + '</div>' +
+      '</section>';
+  }
+
+  /* ---------- [v1.5 신규] 생각 깊이 4지표 시계열 (측정 가능 훈련 3건 이상) ----------
+     - depth.js의 공개 순수함수 window.computeThinkingDepth(text)만 소비(typeof 가드).
+       depth.js 내부/캐시/전역을 변경하지 않으며 fetch·LLM 경로 미접촉(절대 규칙 12 유지).
+     - 시간축은 훈련 로그 자체의 시점(log.date, 폴백 log.id) — 성장 추이로서 더 정확.
+     - 추이 차트(.dash-trend-*)의 시각 시스템을 그대로 재사용(클래스 정의 무수정) →
+       호버 툴팁·라인 강조를 공유. 지표값은 0~100 고정 스케일.
+     - 진단 시계열(buildTrendChart)과 독립: 측정 가능 훈련만으로 3건↑이면 노출. */
+  var DEPTH_TREND = [
+    { key: 'fresh', name: '신선도', color: '#0ea5e9' },
+    { key: 'concrete', name: '구체도', color: '#f59e0b' },
+    { key: 'connect', name: '연결도', color: '#8b5cf6' },
+    { key: 'action', name: '실행도', color: '#ef4444' }
+  ];
+  function buildDepthTrend(logs) {
+    if (typeof window.computeThinkingDepth !== 'function') return '';
+    /* 최신순 로그 → 측정 가능 건만 시간순(과거→현재)으로 수집 (최근 10건) */
+    var series = [];
+    (logs || []).forEach(function (l) {
+      var m = window.computeThinkingDepth(l && l.content);
+      if (!m) return; // 20자 미만 등 측정 불가 제외
+      var t = l.date ? Date.parse(l.date) : (Number(l.id) || 0);
+      series.push({ ts: t, date: l.date || (Number(l.id) ? new Date(Number(l.id)) : ''), metrics: m });
+    });
+    series.sort(function (a, b) { return a.ts - b.ts; });
+    if (series.length > 10) series = series.slice(series.length - 10);
+    if (series.length < 3) return '';
+
+    var max = 100;
+    var W = 380, H = 196, PL = 30, PR = 14, PT = 14, PB = 28;
+    var iw = W - PL - PR, ih = H - PT - PB;
+    function x(i) { return PL + iw * i / (series.length - 1); }
+    function y(v) { return PT + ih * (1 - Math.min(Math.max(v, 0) / max, 1)); }
+    function fmtDate(d) {
+      var t = new Date(d);
+      return isNaN(t) ? '' : (t.getMonth() + 1) + '.' + t.getDate();
+    }
+    var grid = [0, 0.5, 1].map(function (r) {
+      var gy = PT + ih * (1 - r);
+      return '<line x1="' + PL + '" y1="' + gy + '" x2="' + (W - PR) + '" y2="' + gy +
+        '" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>' +
+        '<text x="' + (PL - 6) + '" y="' + (gy + 3.5) + '" text-anchor="end" class="dash-trend-tick">' +
+        Math.round(max * r) + '</text>';
+    }).join('');
+    var labelIdx = series.length <= 5
+      ? series.map(function (_, i) { return i; })
+      : [0, Math.floor((series.length - 1) / 2), series.length - 1];
+    var xLabels = labelIdx.map(function (i) {
+      return '<text x="' + x(i) + '" y="' + (H - 8) + '" text-anchor="middle" class="dash-trend-tick">' +
+        fmtDate(series[i].date) + '</text>';
+    }).join('');
+    var lines = DEPTH_TREND.map(function (mt) {
+      var pts = series.map(function (s, i) { return x(i) + ',' + y(s.metrics[mt.key] || 0); }).join(' ');
+      var dots = series.map(function (s, i) {
+        return '<circle cx="' + x(i) + '" cy="' + y(s.metrics[mt.key] || 0) + '" r="2.6" fill="' + mt.color + '"/>';
+      }).join('');
+      return '<g class="dash-trend-series" data-area="' + mt.key + '">' +
+        '<polyline points="' + pts + '" fill="none" stroke="' + mt.color +
+        '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>' + dots + '</g>';
+    }).join('');
+    var legend = DEPTH_TREND.map(function (mt) {
+      return '<span class="dash-trend-key" data-area="' + mt.key + '"><i style="background:' + mt.color + '"></i>' +
+        mt.name + '</span>';
+    }).join('');
+    /* 호버 오버레이(가이드선 + 툴팁) — 추이 차트와 동일 클래스 재사용, CSS :hover 전용(JS 리스너 0) */
+    var tipW = 104, tipRowH = 15, tipH = 20 + DEPTH_TREND.length * tipRowH + 6;
+    function band(i) {
+      var left = i === 0 ? PL : (x(i - 1) + x(i)) / 2;
+      var right = i === series.length - 1 ? (W - PR) : (x(i) + x(i + 1)) / 2;
+      return [left, right - left];
+    }
+    var cols = series.map(function (s, i) {
+      var cx = x(i), bd = band(i);
+      var tipX = Math.min(Math.max(cx - tipW / 2, PL), W - PR - tipW);
+      var tipY = PT + 2;
+      var rows = DEPTH_TREND.map(function (mt, ri) {
+        var ry = tipY + 20 + ri * tipRowH;
+        var val = s.metrics[mt.key] || 0;
+        return '<circle cx="' + (tipX + 11) + '" cy="' + (ry - 3.5) + '" r="3" fill="' + mt.color + '"/>' +
+          '<text x="' + (tipX + 19) + '" y="' + ry + '" class="dash-trend-tip-row">' + mt.name + '</text>' +
+          '<text x="' + (tipX + tipW - 9) + '" y="' + ry + '" text-anchor="end" class="dash-trend-tip-val">' + val + '</text>';
+      }).join('');
+      var tip = '<g class="dash-trend-tip">' +
+        '<rect class="dash-trend-tip-bg" x="' + tipX + '" y="' + tipY + '" width="' + tipW + '" height="' + tipH + '" rx="8"/>' +
+        '<text class="dash-trend-tip-date" x="' + (tipX + 11) + '" y="' + (tipY + 15) + '">' + fmtDate(s.date) + ' 훈련</text>' +
+        rows + '</g>';
+      return '<g class="dash-trend-col">' +
+        '<line class="dash-trend-guide" x1="' + cx + '" y1="' + PT + '" x2="' + cx + '" y2="' + (PT + ih) + '"/>' +
+        '<rect class="dash-trend-hit" x="' + bd[0] + '" y="' + PT + '" width="' + bd[1] + '" height="' + ih + '"/>' +
+        tip + '</g>';
+    }).join('');
+    return '<section class="dash-card dash-card-wide dash-trend-card dash-dtrend-card">' +
+      '<h3 class="dash-card-label">생각 깊이 추이 <small class="dash-trend-count">측정 ' + series.length + '회 훈련 · 규칙 기반 베타</small></h3>' +
+      '<svg class="dash-trend-svg" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" ' +
+      'role="img" aria-label="생각 깊이 4지표 시계열 추이">' + grid + lines + xLabels + cols + '</svg>' +
       '<div class="dash-trend-legend">' + legend + '</div>' +
       '</section>';
   }
@@ -340,6 +449,7 @@
       '  </section>' +
       '</div>' +
       buildTrendChart(history, max) +
+      buildDepthTrend(logs) +
       '<section class="dash-card dash-card-wide">' +
       '  <div class="dash-tl-head"><h3 class="dash-card-label">최근 기록</h3>' +
       '  <button class="btn-outline-pill dash-tl-more" data-action="open-archive">성장 아카이브 전체 보기</button></div>' +

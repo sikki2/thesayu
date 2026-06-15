@@ -2897,3 +2897,258 @@ body {
   .dash-trend-svg .dash-trend-guide,
   .dash-trend-svg .dash-trend-tip { transition: none; }
 }
+
+/* ============================================================
+   [styles.css v3.2] 성장 추이선 강조 (dashboard.js v1.4)
+   - 범례 키 또는 라인에 호버하면 해당 영역만 진하게, 나머지는 흐리게
+   - CSS :has() 만으로 동작 (새 JS 리스너 0 — 인계문서 절대 규칙 7 유지)
+   - 기존 .dash-trend-* 정의 무수정 / 신규 .dash-trend-series 대상 + 범례 data-area 활용
+   ============================================================ */
+.dash-trend-series { transition: opacity 0.16s ease; }
+.dash-trend-key { cursor: default; }
+
+/* 어느 한 영역에 호버 → 전체 라인을 흐리게 (이후 매칭 영역만 복원) */
+.dash-trend-card:has(.dash-trend-key:hover) .dash-trend-series,
+.dash-trend-card:has(.dash-trend-series:hover) .dash-trend-series {
+  opacity: 0.16;
+}
+/* 호버된 영역(범례 또는 라인)만 원래 진하기로 복원 — 4영역 정적 열거 */
+.dash-trend-card:has(.dash-trend-key[data-area="conn"]:hover) .dash-trend-series[data-area="conn"],
+.dash-trend-card:has(.dash-trend-series[data-area="conn"]:hover) .dash-trend-series[data-area="conn"],
+.dash-trend-card:has(.dash-trend-key[data-area="obs"]:hover) .dash-trend-series[data-area="obs"],
+.dash-trend-card:has(.dash-trend-series[data-area="obs"]:hover) .dash-trend-series[data-area="obs"],
+.dash-trend-card:has(.dash-trend-key[data-area="simp"]:hover) .dash-trend-series[data-area="simp"],
+.dash-trend-card:has(.dash-trend-series[data-area="simp"]:hover) .dash-trend-series[data-area="simp"],
+.dash-trend-card:has(.dash-trend-key[data-area="inv"]:hover) .dash-trend-series[data-area="inv"],
+.dash-trend-card:has(.dash-trend-series[data-area="inv"]:hover) .dash-trend-series[data-area="inv"] {
+  opacity: 1;
+}
+/* 강조된 영역의 점은 살짝 키워 가독성 보강 (선택적) */
+.dash-trend-card:has(.dash-trend-key[data-area="conn"]:hover) .dash-trend-series[data-area="conn"] circle,
+.dash-trend-card:has(.dash-trend-series[data-area="conn"]:hover) .dash-trend-series[data-area="conn"] circle,
+.dash-trend-card:has(.dash-trend-key[data-area="obs"]:hover) .dash-trend-series[data-area="obs"] circle,
+.dash-trend-card:has(.dash-trend-series[data-area="obs"]:hover) .dash-trend-series[data-area="obs"] circle,
+.dash-trend-card:has(.dash-trend-key[data-area="simp"]:hover) .dash-trend-series[data-area="simp"] circle,
+.dash-trend-card:has(.dash-trend-series[data-area="simp"]:hover) .dash-trend-series[data-area="simp"] circle,
+.dash-trend-card:has(.dash-trend-key[data-area="inv"]:hover) .dash-trend-series[data-area="inv"] circle,
+.dash-trend-card:has(.dash-trend-series[data-area="inv"]:hover) .dash-trend-series[data-area="inv"] circle {
+  r: 3.4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-trend-series { transition: none; }
+}
+
+/* ============================================================
+   [styles.css v3.3] 생각 깊이 4지표 시계열 강조 (dashboard.js v1.5)
+   - 깊이 차트는 추이 차트(.dash-trend-*) 시각 시스템을 재사용하므로
+     v3.2의 "전체 흐리게" 규칙이 그대로 적용됨. 다만 복원 규칙이 영역키
+     (conn/obs/simp/inv)만 열거했으므로, 깊이 지표키 4종을 여기서 추가 복원.
+   - v3.2 블록은 무수정. CSS :has() 전용(새 JS 리스너 0 — 절대 규칙 7 유지).
+   ============================================================ */
+.dash-trend-card:has(.dash-trend-key[data-area="fresh"]:hover) .dash-trend-series[data-area="fresh"],
+.dash-trend-card:has(.dash-trend-series[data-area="fresh"]:hover) .dash-trend-series[data-area="fresh"],
+.dash-trend-card:has(.dash-trend-key[data-area="concrete"]:hover) .dash-trend-series[data-area="concrete"],
+.dash-trend-card:has(.dash-trend-series[data-area="concrete"]:hover) .dash-trend-series[data-area="concrete"],
+.dash-trend-card:has(.dash-trend-key[data-area="connect"]:hover) .dash-trend-series[data-area="connect"],
+.dash-trend-card:has(.dash-trend-series[data-area="connect"]:hover) .dash-trend-series[data-area="connect"],
+.dash-trend-card:has(.dash-trend-key[data-area="action"]:hover) .dash-trend-series[data-area="action"],
+.dash-trend-card:has(.dash-trend-series[data-area="action"]:hover) .dash-trend-series[data-area="action"] {
+  opacity: 1;
+}
+.dash-trend-card:has(.dash-trend-key[data-area="fresh"]:hover) .dash-trend-series[data-area="fresh"] circle,
+.dash-trend-card:has(.dash-trend-series[data-area="fresh"]:hover) .dash-trend-series[data-area="fresh"] circle,
+.dash-trend-card:has(.dash-trend-key[data-area="concrete"]:hover) .dash-trend-series[data-area="concrete"] circle,
+.dash-trend-card:has(.dash-trend-series[data-area="concrete"]:hover) .dash-trend-series[data-area="concrete"] circle,
+.dash-trend-card:has(.dash-trend-key[data-area="connect"]:hover) .dash-trend-series[data-area="connect"] circle,
+.dash-trend-card:has(.dash-trend-series[data-area="connect"]:hover) .dash-trend-series[data-area="connect"] circle,
+.dash-trend-card:has(.dash-trend-key[data-area="action"]:hover) .dash-trend-series[data-area="action"] circle,
+.dash-trend-card:has(.dash-trend-series[data-area="action"]:hover) .dash-trend-series[data-area="action"] circle {
+  r: 3.4;
+}
+/* 깊이 추이 카드 상단 여백만 살짝 — 진단 추이 카드와의 시각 구분(레이아웃 비파괴) */
+.dash-dtrend-card { margin-top: 14px; }
+
+/* ============================================================
+   [APPEND-ONLY · v3.5] 다크 모드 (Light/Dark Theme)
+   - 적용 방식: <html data-theme="dark"> 일 때만 발동. light/미설정은 기존 :root 기본값 사용
+   - 핵심: :root 색상 토큰만 재정의 → var() 사용 규칙(약 190곳) 자동 전환
+   - 기존 블록 무수정. 신규 클래스: .theme-toggle-btn / .theme-transition (둘 다 신규)
+   - app.js·diagnosis.js·dashboard.js·depth.js 무접촉
+   ============================================================ */
+
+[data-theme="dark"] {
+  --bg-color: #0e0e11;
+  --bg-grid-color: rgba(255, 255, 255, 0.035);
+
+  --nav-bg: #26262c;            /* 페이지 배경보다 띄워 검은 리퀴드 위젯·네비가 묻히지 않게 */
+  --nav-text: #9ca0ac;
+  --nav-text-active: #fffefc;
+
+  --card-bg: rgba(30, 30, 35, 0.72);
+  --card-bg-hover: rgba(40, 40, 47, 0.92);
+  --card-bg-active: #1d1d22;
+  --card-border: rgba(255, 255, 255, 0.09);
+  --card-border-hover: rgba(255, 255, 255, 0.20);
+  --card-border-active: rgba(255, 255, 255, 0.34);
+
+  --text-primary: #f2f2f5;
+  --text-secondary: #b6bac6;
+  --text-muted: #80828f;
+
+  --color-accent: #1ad0dc;       /* 다크 배경 대비 가독성 위해 브랜드 틸을 살짝 밝게 */
+  --color-accent-purple: #a47bff;
+  --color-accent-rgb: 26, 208, 220;
+
+  --carousel-accent: #f2f2f5;    /* 스캐터/캐러셀에서 잉크색이 라이트로 반전 */
+  --carousel-accent-rgb: 242, 242, 245;
+
+  color-scheme: dark;
+}
+
+/* 하드코딩 색이 남아 있던 표면 — 다크 전용 보정 */
+[data-theme="dark"] .toast-notification {
+  background: rgba(28, 28, 33, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+[data-theme="dark"] .btn-outline-pill {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+[data-theme="dark"] .blob-container {
+  opacity: 0.5;                 /* 다크에서 장식 블롭이 과하게 빛나지 않도록 */
+}
+
+/* 테마 토글 버튼 (헤더 우측, 신규 클래스) */
+.theme-toggle-btn {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+  outline: none;
+}
+.theme-toggle-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .theme-toggle-btn {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+/* 'auto' 상태일 때 작은 점 표식으로 자동 모드임을 암시 */
+.theme-toggle-btn[data-mode="auto"]::after {
+  content: "";
+  position: absolute;
+  transform: translate(13px, -11px);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+.theme-toggle-btn { position: relative; }
+
+/* 토글 시에만 부드러운 색 전환 (로드 시 깜빡임 방지: JS가 일시적으로만 부여) */
+.theme-transition,
+.theme-transition *:not(.blob):not(.bg-bubble) {
+  transition: background-color 0.35s ease, color 0.35s ease,
+              border-color 0.35s ease, fill 0.35s ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-transition, .theme-transition * { transition: none !important; }
+}
+
+/* ============================================================
+   [APPEND-ONLY · v3.6] 테마 토글 → 헤더 분리, 우하단 플로팅 위젯
+   - 기존 .theme-toggle-btn 정의 무수정. 신규 래퍼 .theme-fab 추가만
+   - 위치: 우하단 모서리. z-index 95(본문 위·오버레이 150+ 아래)
+   ============================================================ */
+.theme-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 20px;
+  z-index: 95;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: var(--transition-smooth);
+}
+.theme-fab:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px);
+}
+[data-theme="dark"] .theme-fab {
+  border-color: var(--card-border-hover);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+/* 래퍼가 테두리를 담당하므로 내부 버튼 테두리는 제거(이중 테두리 방지) */
+.theme-fab .theme-toggle-btn { border-color: transparent; }
+.theme-fab .theme-toggle-btn:hover { transform: none; border-color: transparent; color: var(--color-accent); }
+@media (max-width: 768px) {
+  .theme-fab { right: 14px; bottom: 14px; }
+}
+
+/* ============================================================
+   [APPEND-ONLY · v3.7] 다크모드 하드코딩 밝은 표면 보정 (가독성)
+   - 배경이 하드코딩 밝은색이라 다크에서 '밝은 글자 + 밝은 배경'으로 묻히던 표면들을
+     어두운 표면으로 전환. 글자색은 변수(--text-*)라 자동으로 밝게 유지됨.
+   - 기존 블록 무수정. [data-theme="dark"] 한정 오버라이드만 추가.
+   ============================================================ */
+
+/* 스캐터 영역 라벨(창의/논리/메타/공감/비판) — 밝은 칩 → 어두운 칩 */
+[data-theme="dark"] .category-stack-label {
+  background: rgba(28, 28, 33, 0.92);
+  border-color: rgba(255, 255, 255, 0.20);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
+/* 훈련 워크스페이스 오버레이 + 입력 카드 */
+[data-theme="dark"] .exercise-overlay {
+  background: rgba(14, 14, 17, 0.92);
+}
+[data-theme="dark"] .workspace-card {
+  background: rgba(24, 24, 28, 0.96);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
+}
+
+/* 성장 아카이브 드로어 */
+[data-theme="dark"] .app-drawer {
+  background: rgba(20, 20, 24, 0.97);
+  border-left-color: rgba(255, 255, 255, 0.10);
+  box-shadow: -15px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* 진단 / 로그 상세 풀스크린 오버레이 */
+[data-theme="dark"] .diagnosis-overlay,
+[data-theme="dark"] .log-detail-overlay {
+  background: rgba(14, 14, 17, 0.92);
+}
+
+/* 진단 결과 내부 타일 / AI 비교 칼럼 */
+[data-theme="dark"] .diag-depth-tile { background: rgba(255, 255, 255, 0.05); }
+[data-theme="dark"] .diag-vs-col { background: rgba(255, 255, 255, 0.04); }
+
+/* 대시보드 싱크로 항목 */
+[data-theme="dark"] .dash-sync-item { background: rgba(255, 255, 255, 0.05); }
+
+/* 모바일 헤더 배경 */
+@media (max-width: 768px) {
+  [data-theme="dark"] .header {
+    background: rgba(14, 14, 17, 0.95);
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+  }
+}
